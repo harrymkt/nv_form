@@ -13,6 +13,7 @@ Parses a shortcut from value.
 Never use this function without verification, like `nv_parse_shortcut(value).name` as this function may return null if the value is invalid.
 
 Value can contain compatible key names from `get_key_name(int)` function, and separate by `+` (plus sign). In addition, the following value can be used as key modifiers:
+
 - `Ctrl` (case insensitive): Either Control key.
 - `Shift` (case insensitive): Either Shift key.
 - `Alt` (case insensitive): Either Alt key.

@@ -92,7 +92,7 @@ def main():
 	print("Processing CI...")
 	pr = "### Module Manifests\nThe following modules are available\n\n"
 	for x in folders:
-		zip(x, f"{x}.zip", custom_path="LICENSE.md")
+		zip(x, f"{x}.zip")
 		print(f"{x}.zip created")
 		d = None
 		with open(f"{x}.json", "r", encoding="utf-8") as f:

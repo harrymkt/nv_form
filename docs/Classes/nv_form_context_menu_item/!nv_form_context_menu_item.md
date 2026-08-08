@@ -1,14 +1,16 @@
 # nv_form_context_menu_item
 A single entry of an `nv_form_context_menu`.
 
-`nv_form_context_menu_item(const string &in caption, nv_form_control_callback@ callback);`
+`nv_form_context_menu_item(const string &in text, const string &in id, nv_form_control_callback@ callback);`
 
 ## Arguments:
-- `const string &in caption`: The text spoken for this entry.
+- `const string &in text`: The text spoken for this entry.
+- `const string &in id`: The ID for this entry.
 - `nv_form_control_callback@ callback`: What to run when the entry is chosen.
 
 ## Properties:
-- `string caption`: The text of the entry.
+- `string text`: The text of the entry.
+- `string id`: The ID of the entry.
 - `nv_form_control_callback@ callback`: The action of the entry.
 
 ## Remarks:

@@ -1,5 +1,6 @@
 # nv_form_event_type
 A list of event types:
+
 - `NV_FORM_EVENT_NONE`: None event.
 - `NV_FORM_EVENT_FOCUS_GAINED`: A control has gained its focus. Tip: this can be used to add navigation sound.
 - `NV_FORM_EVENT_FOCUS_LOST`: Focus to the control has been lost.

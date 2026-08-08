@@ -1,5 +1,6 @@
 # nv_form_control_type
 This is a complete list of all control types available in the NV Form, as well as a brief description of what they do.
+
 - `NV_FORM_CT_BUTTON`: A normal, pressable button.
 - `NV_FORM_CT_INPUT`: Any form of text box.
 - `NV_FORM_CT_CHECKBOX`: A checkable/uncheckable control.

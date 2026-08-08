@@ -1,8 +1,7 @@
-class nv_form_context_menu_item {
-	string caption;
+class nv_form_context_menu_item: nv_form_list_item {
 	nv_form_control_callback@ callback;
-	nv_form_context_menu_item(const string &in caption, nv_form_control_callback@ callback) {
-		this.caption = caption;
+	nv_form_context_menu_item(const string &in text, const string &in id, nv_form_control_callback@ callback) {
+		super(text, id);
 		@this.callback = @callback;
 	}
 }
@@ -21,15 +20,18 @@ class nv_form_context_menu : nv_utility_form {
 		this.change_screen_title = change_screen_title;
 		this.say_dialog = say_dialog;
 	}
-	void add_item(const string &in caption, nv_form_control_callback@ callback) {
-		items.insert_last(nv_form_context_menu_item(caption, @callback));
+	void add_item(const string &in text, nv_form_control_callback@ callback) {
+		items.insert_last(nv_form_context_menu_item(text, text, @callback));
+	}
+	void add_item(const string &in text, const string &in id, nv_form_control_callback@ callback) {
+		items.insert_last(nv_form_context_menu_item(text, id, @callback));
 	}
 	void show() {
 		if (items.length() == 0 || f.active) return;
 		f.create_window(title, change_screen_title, say_dialog);
 		@list = f.add_list("Actions", "actions", false);
 		for (uint i = 0; i < items.length(); i++) {
-			list.add(items[i].caption, "" + i);
+			list.add(items[i].text, items[i].id);
 		}
 		list.list_position = 0;
 		nv_form_button@ cancel_btn = f.add_button("Cancel", "cancel", false, true);
@@ -50,7 +52,7 @@ class nv_form_context_menu : nv_utility_form {
 		else if (list.pressed) {
 			list.pressed = false;
 			int idx = list.list_position;
-			if (idx >= 0 && idx < int(items.length())) {
+			if (idx >= 0 && idx < items.length()) {
 				nv_form_control_callback@ cb = items[idx].callback;
 				close(true);
 				if (@cb != null) cb(owner_control);

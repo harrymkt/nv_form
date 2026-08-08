@@ -40,14 +40,15 @@ class nv_form_suggestion_manager : nv_utility_form {
 	}
 	private void show() {
 		active = true;
-		f.create_window("Suggestions", false, false, true); // Silent creation
+		f.create_window("Suggestions available", false, false);
 		@list = f.add_list("Suggestions", "sug", false);
 		nv_form_button@ cancel_btn = f.add_button("Cancel", "cancel", false, true);
 		@cancel_btn.shortcut = nv_shortcut(KEY_C, alt = true);
-		update_list();
+		cancel_btn.hidden = true;
+		update_list(false);
 		@parent_form.nv_utility_form = this;
 	}
-	private void update_list() {
+	private void update_list(bool interrupt = tts_default_interrupt) {
 		list.items.resize(0);
 		for (uint i = 0; i < current_matches.length(); i++) {
 			list.add(current_matches[i], "" + i);
@@ -55,7 +56,7 @@ class nv_form_suggestion_manager : nv_utility_form {
 		list.list_position = 0;
 		if (current_matches[0] != last_spoken_match) {
 			last_spoken_match = current_matches[0];
-			speak(last_spoken_match + "");
+			speak(last_spoken_match, interrupt);
 		}
 	}
 	void monitor() {

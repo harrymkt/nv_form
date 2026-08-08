@@ -6,6 +6,7 @@ void main() {
 	@btn.context_menu = nv_form_context_menu(f, btn);
 	btn.context_menu.add_item("Option 1", on_option);
 	btn.context_menu.add_item("Option 2", on_option);
+	btn.context_menu.add_item("Option3", "op3", on_option);
 	nv_form_input@ inp = f.add_input("Input with Menu", "inp1");
 	@inp.context_menu = nv_form_context_menu(f, inp);
 	inp.context_menu.add_item("Clear Text", on_clear);
@@ -19,7 +20,7 @@ void main() {
 	}
 }
 bool on_option(nv_form_control@ ctrl) {
-	alert("Context Menu", "You selected an option from the menu attached to: " + ctrl.caption + ". It is: " + ctrl.context_menu.list.focused_item.text);
+	alert("Context Menu", "You selected an option from the menu attached to: " + ctrl.caption + ". It is: " + ctrl.context_menu.list.focused_item.id);
 	return true;
 }
 bool on_clear(nv_form_control@ ctrl) {
