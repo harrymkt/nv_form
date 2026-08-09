@@ -132,7 +132,7 @@ class nv_form {
 		}
 		return true;
 	}
-	void handle_input() {
+	bool handle_input() {
 		nv_form_control@ ctrl = current_control;
 		nv_form_control@ pctrl = primary_control;
 		bool handled = false;
@@ -146,14 +146,14 @@ class nv_form {
 					else if (key_pressed(KEY_NUMPAD_ENTER)) handled = sug.handle_key(KEY_NUMPAD_ENTER);
 					else if (key_pressed(KEY_TAB)) handled = sug.handle_key(KEY_TAB);
 					else if (key_pressed(KEY_ESCAPE)) handled = sug.handle_key(KEY_ESCAPE);
-					if (handled) return;
+					if (handled) return true;
 				}
 			}
 			handled = ctrl.handle_input();
 			if (((keyboard_modifiers & KEYMOD_SHIFT) != 0 && key_pressed(KEY_F10)) || key_pressed(KEY_MENU) || key_pressed(KEY_APPLICATION)) {
 				if (@ctrl.context_menu != null) {
 					ctrl.context_menu.show();
-					return;
+					return true;
 				}
 			}
 		}
@@ -173,6 +173,7 @@ class nv_form {
 				handled = true;
 			}
 		}
+		if (handled) return true;
 		bool found_shortcut = false;
 		int sposition = clamp(control_index + 1, 0, int(controls.length()) - 1);
 		for (uint i = sposition; i < controls.length(); i++) {
@@ -194,6 +195,7 @@ class nv_form {
 				}
 			}
 		}
+		return handled;
 	}
 	void error(nv_form_errorcode error) {
 		errors.insert_last(error);

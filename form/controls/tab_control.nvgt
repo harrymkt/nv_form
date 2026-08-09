@@ -100,8 +100,7 @@ class nv_form_tab_control: nv_form_control {
 				tab_pages[tab_page_index].navigate_form(interrupt_previous_speech = false);
 				return true;
 			}
-			tab_pages[tab_page_index].handle_input();
-			return true;
+			return tab_pages[tab_page_index].handle_input();
 		}
 		return false;
 	}
