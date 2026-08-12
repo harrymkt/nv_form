@@ -8,3 +8,4 @@ A list of event types:
 - `NV_FORM_EVENT_SLIDER_CHANGED`: A slider has changed.
 - `NV_FORM_EVENT_SWITCH_CHANGED`: A switch has changed.
 - `NV_FORM_EVENT_INPUT`: input event, see `nv_form_input_event` class documentation.
+- `NV_FORM_EVENT_LIST`: A list event.

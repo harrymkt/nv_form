@@ -34,6 +34,8 @@ class nv_form_context_menu : nv_utility_form {
 			list.add(items[i].text, items[i].id);
 		}
 		list.list_position = 0;
+		nv_form_button@ ok_btn = f.add_button("Ok", "ok", true);
+		ok_btn.hidden = true;
 		nv_form_button@ cancel_btn = f.add_button("Cancel", "cancel", false, true);
 		@cancel_btn.shortcut = nv_shortcut(KEY_C, alt = true);
 		cancel_btn.hidden = true;
@@ -48,9 +50,8 @@ class nv_form_context_menu : nv_utility_form {
 		}
 		if (f.is_pressed("cancel")) {
 			close();
-		}
-		else if (list.pressed) {
-			list.pressed = false;
+			return;
+		} else if (f.is_pressed("ok")) {
 			int idx = list.list_position;
 			if (idx >= 0 && idx < items.length()) {
 				nv_form_control_callback@ cb = items[idx].callback;

@@ -9,9 +9,18 @@ class nv_form_event_dispatcher {
 			if (@value != null) handlers.insert_last(value);
 		}
 	}
-	void add(nv_form_event_handler@ cb) {
-		if (@cb == null || handlers.find_by_ref(cb) > -1) return;
+	bool add(nv_form_event_handler@ cb) {
+		if (@cb == null || handlers.find_by_ref(cb) > -1) return false;
 		handlers.insert_last(cb);
+		return true;
+	}
+	bool add(nv_form_event_handler@[] cbs) {
+		if (cbs.length() < 1) return false;
+		uint c = 0;
+		for (uint i = 0; i < cbs.length(); i++) {
+			if (add(cbs[i])) c++;
+		}
+		return c != 0;
 	}
 	bool remove(nv_form_event_handler@ cb) {
 		if (@cb == null) return false;

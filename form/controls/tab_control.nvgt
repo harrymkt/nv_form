@@ -32,7 +32,7 @@ class nv_form_tab_control: nv_form_control {
 		return join(f, "  ");
 	}
 	bool handle_input() {
-		if (@parent.current_control != @this) return false;
+		if (@parent == null || @parent.current_control != @this) return false;
 		if (tab_page_index > -1 && tab_page_index < tab_pages.length() && tab_pages[tab_page_index].control_index == -1) {
 			if ((key_repeating(KEY_RIGHT) || key_repeating(KEY_DOWN)) && tab_page_index < tab_pages.length() - 1) {
 				tab_pages[tab_page_index].control_index = -1;

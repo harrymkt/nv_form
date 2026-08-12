@@ -35,6 +35,19 @@ jobs:
           mkdir -p "$TARGET_DIR"
           # Copy the file
           cp "${{ env.app_name }}.json" "$TARGET_DIR/${{ env.app_name }}.json"
+      - name: Delete Existing Release and Tag
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+        run: |
+          TAG_NAME="module"
+          
+          # Delete existing release (if it exists)
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Deleting existing release: $TAG_NAME"
+            gh release delete "$TAG_NAME" --yes --cleanup-tag
+          else
+            echo "No existing release found for tag: $TAG_NAME"
+          fi
       - name: Publish Automated Modules Release
         uses: softprops/action-gh-release@v3
         with:
@@ -55,7 +68,7 @@ jobs:
           git add .
           
           if ! git diff-index --quiet HEAD; then
-            git commit -m "Update Package Manifest of ${{ env.app_name }}" \
+            git commit -m "${{ env.app_name }}: Update to Version ${{ steps.builder.outputs.version }}" \
               -m "${{ steps.builder.outputs.pr_body }}"
             
             git push

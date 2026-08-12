@@ -7,16 +7,12 @@ class nv_form_list_box: nv_form_control {
 	bool multinav = true;
 	timer multinavtime;
 	string multichar;
-	bool pressed = false;
 	nv_form_list_box(nv_form@parent, const string &in caption, const string &in id = "", bool allow_multiselect = false, nv_form_list_item@[] items = {}, int max_items = -1, bool speak_position = false) {
 		super(caption, id, NV_FORM_CT_LIST, @parent);
 		multiselect = allow_multiselect;
 		this.speak_position = speak_position;
 		this.max_items = max_items;
 		if (items.length() > 0) this.items.extend(items);
-	}
-	void on_fire() {
-		pressed = true;
 	}
 	nv_form_list_item@get_focused_item() const property {
 		if (items.length() <= 0 || list_position < 0 || list_position >= int(items.length())) return null;
@@ -144,10 +140,6 @@ class nv_form_list_box: nv_form_control {
 				speak((focused_item.selected ? "Checked" : "Not checked"));
 				return true;
 			}
-		}
-		if (key_pressed(KEY_RETURN) || key_pressed(KEY_NUMPAD_ENTER)) {
-			fire();
-			return true;
 		}
 		if (handle_nv_utils(this)) return true;
 		return false;

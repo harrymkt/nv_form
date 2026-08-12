@@ -1,6 +1,6 @@
 {
-  "version": "2026.08.09.0200",
+  "version": "2026.08.12",
   "url": "https://github.com/harrymkt/nv_form/releases/download/module/form.zip",
-  "description": "NV Form is a new auditory form UI system designed for ease of use and extensibility.",
+  "description": "NV Form is a new auditory form UI system designed for ease of use and extensibility, clean integration and a set of facilities.",
   "homepage": "https://github.com/harrymkt/nv_form"
 }

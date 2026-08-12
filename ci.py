@@ -90,7 +90,8 @@ def set_output(key, value):
 
 def main():
 	print("Processing CI...")
-	pr = "### Module Manifests\nThe following modules are available\n\n"
+	pr = ""
+	version = ""
 	for x in folders:
 		zip(x, f"{x}.zip")
 		print(f"{x}.zip created")
@@ -105,8 +106,11 @@ def main():
 		cm += f"- Version: {d.get("version", "unknown")}\n- Download URL: {d["url"]}\n"
 		if "homepage" in d: cm += f"- Home page URL: {d["homepage"]}"
 		pr += f"{cm.strip()}\n\n"
+		version = d.get("version", "1.0")
 	pr = pr.strip()
 	set_output("pr_body", pr)
+	if version == "": version = "1.0"
+	set_output("version", version)
 	return 0
 
 if __name__ == "__main__":

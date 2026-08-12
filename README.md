@@ -1,5 +1,5 @@
 # NV Form
-`nv_form` is a new, redesigned auditory form written in [NVGT](https://nvgt.dev) scripting game engine. This is written to make audio form more modernized, now that the old form in NVGT is legacy.
+`nv_form` is a new, redesigned auditory form written in and for [NVGT](https://nvgt.dev) scripting game engine. This is written to make audio form more modernized, now that the old form in NVGT is legacy.
 
 This is a modified version of [NV Form](https://github.com/ivansoto0/nv_form) originally written by Ivan Soto, as that repository is not being actively maintained.
 
@@ -26,6 +26,7 @@ We accept contributions as long as the established [contributions guidelines](.g
 
 ## Features
 NV Form module advertises the following features:
+
 - Ease of Use: NV Form is easy to integrate, use, and make changes.
 - Form Controls: NV Form supports many controls out of the box, including buttons, check boxes, text fields, lists, sliders, progress bars, switches, context menus, suggestions, and more. Please see a list of [available control types](docs/Enums/nv_form_control_type.md) in the documentation.
 - Custom Controls: Add to or modify any control as you wish if it does not meet your requirements. Add custom controls by directly making child classes of specific controls you want, as well as extend and modify existing controls by directly making a child class of them. See [nv_form_control Documentation](docs/Classes/nv_form_control).

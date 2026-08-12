@@ -27,5 +27,5 @@ alert("hello","testing");
 ```
 
 ### Naming convention
-- A class , method, function, and variable name must be snake lowercase, `my_class` is good, `myClass` and `MyClass` are not.
-- The name of a constant variable, that one that never changes in runtime, must be snake uppercase, `MY_CONSTANT` is good, `MyConstant`, `my_constant`, and `myConstant` are not. This also applies to enum value names, but not the name of the enums itself.
+- A class , method, function, namespace, and variable name must be snake lowercase, `my_class` is good, `myClass` and `MyClass` are not.
+- The name of a constant variable, that one that never changes in runtime, must be snake uppercase, `MY_CONSTANT` is good, `MyConstant`, `my_constant`, and `myConstant` are not. This also applies to enum value names, but not the name of the enums itself. The name of the enum itself should be snake lowercase, i.e. just as a namespace.
