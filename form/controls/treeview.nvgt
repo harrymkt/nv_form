@@ -92,7 +92,7 @@ class nv_form_treeview : nv_form_control {
 		if (@current_focused != null) {
 			for (uint i = 0; i < visible_nodes.length(); i++) {
 				if (@visible_nodes[i] == @current_focused) {
-					pos = i;
+					set_pos(i, fire_event = true);
 					break;
 				}
 			}
@@ -116,7 +116,7 @@ class nv_form_treeview : nv_form_control {
 		if (@node == null) return "";
 		return node.id;
 	}
-	bool set_pos(int index, bool autobound = true) {
+	bool set_pos(int index, bool autobound = true, bool fire_event = false) {
 		if (visible_nodes.length() <= 0) {
 			return false;
 		}
@@ -125,8 +125,20 @@ class nv_form_treeview : nv_form_control {
 			if (index >= visible_nodes.length()) index = visible_nodes.length() - 1;
 		}
 		if (index < 0 || index > visible_nodes.length() - 1) return false;
+		int opos = pos;
 		pos = index;
+		if (fire_event) {
+			dictionary a;
+			a.set("old_pos", opos);
+			fire_item_change_event(a);
+		}
 		return true;
+	}
+	void fire_item_change_event(dictionary@ args) {
+		nv_form_treeview_event l(this);
+		int oldpos;
+		if (args.get("old_pos", oldpos)) l.old_pos = oldpos;
+		event.fire(l);
 	}
 	int find_multinav_position(const string &in prefix) {
 		if (prefix == "" || visible_nodes.length() <= 0) return -1;
@@ -166,7 +178,7 @@ class nv_form_treeview : nv_form_control {
 					return false;
 				}
 				if (position != pos) {
-					if (set_pos(position, false)) speak_current_node();
+					if (set_pos(position, false, fire_event = true)) speak_current_node();
 				} else speak_current_node();
 				return true;
 			}
@@ -181,7 +193,7 @@ class nv_form_treeview : nv_form_control {
 		}
 		if (key_repeating(KEY_UP)) {
 			if (pos > 0) {
-				set_pos(pos - 1);
+				set_pos(pos - 1, fire_event = true);
 				speak_current_node();
 				return true;
 			}
@@ -195,7 +207,7 @@ class nv_form_treeview : nv_form_control {
 					return true;
 				} else {
 					if (pos < visible_nodes.length() - 1) {
-						pos++;
+						set_pos(pos + 1, fire_event = true);
 						speak_current_node();
 						return true;
 					}
@@ -212,7 +224,7 @@ class nv_form_treeview : nv_form_control {
 				nv_form_tree_node@ p = node.parent;
 				for (uint i = 0; i < visible_nodes.length(); i++) {
 					if (@visible_nodes[i] == @p) {
-						pos = i;
+						set_pos(i, fire_event = true);
 						speak_current_node();
 						return true;
 					}
@@ -220,12 +232,12 @@ class nv_form_treeview : nv_form_control {
 			}
 		}
 		if (key_repeating(KEY_HOME)) {
-			set_pos(0);
+			set_pos(0, fire_event = true);
 			speak_current_node();
 			return true;
 		}
 		if (key_repeating(KEY_END)) {
-			set_pos(visible_nodes.length() - 1);
+			set_pos(visible_nodes.length() - 1, fire_event = true);
 			speak_current_node();
 			return true;
 		}
@@ -265,7 +277,7 @@ class nv_form_treeview : nv_form_control {
 			}
 			if (i == position) break;
 			if (nav_nodes[i].find(text) < 0) continue;
-			if (set_pos(i, false)) {
+			if (set_pos(i, false, fire_event = true)) {
 				if (!silent) {
 					if (wrapped != "") speak(wrapped);
 					speak_current_node(false);

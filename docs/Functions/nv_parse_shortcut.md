@@ -1,5 +1,5 @@
 # nv_parse_shortcut
-Parses a shortcut from value.
+Parses a shortcut from  a given value.
 
 `nv_shortcut@ parse_nv_shortcut(const string &in value);`
 

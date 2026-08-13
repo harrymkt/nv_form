@@ -38,7 +38,7 @@ class nv_form_spin: nv_form_input {
 	bool handle_input() {
 		if (!read_only) {
 			if (key_repeating(KEY_UP)) {
-				double t = parse_float(text) + this.step;
+				double t = parse_double(text) + this.step;
 				if (text == "") t = min;
 				if (t > max) t = max;
 				unselect(true);
@@ -47,7 +47,7 @@ class nv_form_spin: nv_form_input {
 				previous_line();
 				return true;
 			} else if (key_repeating(KEY_DOWN)) {
-				double t = parse_float(text) - step;
+				double t = parse_double(text) - step;
 				if (text == "") t = min;
 				if (t < min) t = min;
 				unselect(true);
@@ -56,7 +56,7 @@ class nv_form_spin: nv_form_input {
 				next_line();
 				return true;
 			} else if (key_repeating(KEY_PAGEUP)) {
-				double t = parse_float(text) + page;
+				double t = parse_double(text) + page;
 				if (text == "") t = min;
 				if (t > max) t = max;
 				unselect(true);
@@ -65,7 +65,7 @@ class nv_form_spin: nv_form_input {
 				previous_line();
 				return true;
 			} else if (key_repeating(KEY_PAGEDOWN)) {
-				double t = parse_float(text) - page;
+				double t = parse_double(text) - page;
 				if (text == "") t = min;
 				if (t < min) t = min;
 				unselect(true);

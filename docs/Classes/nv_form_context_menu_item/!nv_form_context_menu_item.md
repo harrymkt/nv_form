@@ -9,8 +9,8 @@ A single entry of an `nv_form_context_menu`.
 - `nv_form_control_callback@ callback`: What to run when the entry is chosen.
 
 ## Properties:
-- `string text`: The text of the entry.
-- `string id`: The ID of the entry.
+- `const string &in text`: The text of the entry.
+- `const string &in id`: The ID of the entry.
 - `nv_form_control_callback@ callback`: The action of the entry.
 
 ## Remarks:

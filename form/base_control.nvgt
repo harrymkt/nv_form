@@ -66,9 +66,7 @@ abstract class nv_form_control {
 	void on_fire() { }
 	void on_focus_gained_immediate() { }
 	void on_focus_gained() { }
-	string get_control_info() {
-		return "";
-	}
+	string get_control_info() { return ""; }
 	string get_fixed_type_first() property { return ""; }
 	string get_fixed_type_last() property { return ""; }
 	bool check_shortcut() {

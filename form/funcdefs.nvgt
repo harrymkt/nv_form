@@ -1,3 +1,4 @@
 funcdef bool nv_form_callback(nv_form@f, dictionary@args = null);
 funcdef bool nv_form_control_callback(nv_form_control@ctrl);
 funcdef void nv_form_event_handler(nv_form_event@ event);
+funcdef bool nv_form_context_menu_callback(nv_form_context_menu@ ctx);

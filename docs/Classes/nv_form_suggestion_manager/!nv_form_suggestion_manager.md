@@ -8,8 +8,6 @@ Autocomplete for a text field. Offers a list of entries that start with what the
 - `nv_form_input@ owner_input`: The text field this manager completes.
 
 ## Remarks:
-This is an experimental feature.
-
 Assign the manager to the `suggestion_manager` property of an input and everything else is automatic. The input calls `update` whenever its text changes, whether the user typed, deleted, or pasted.
 
 Unlike the other `nv_utility_form` implementations, this one deliberately does not take the input focus. Its `monitor` is empty, and the parent form instead forwards the arrow keys, Enter, Tab and Escape to `handle_key`, so the user keeps typing in the field while the suggestion list is open.

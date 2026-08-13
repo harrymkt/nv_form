@@ -1,7 +1,7 @@
 class nv_form_slider: nv_form_control {
 	double min_value, max_value, step, page, value;
 	dictionary text;
-	nv_form_slider(nv_form@parent, const string &in caption, const string &in id = "", double min_value = 0, double max_value = 100, double step = 1, double initial_value = 0, double page = 0) {
+	nv_form_slider(nv_form@parent, const string &in caption, const string &in id = "", double min_value = 0, double max_value = 100, double step = 1, double initial_value = 0, double page = 0, dictionary@ text = null) {
 		super(caption, id, NV_FORM_CT_SLIDER, @parent);
 		this.min_value = min_value;
 		this.max_value = max_value;
@@ -10,6 +10,7 @@ class nv_form_slider: nv_form_control {
 		value = initial_value;
 		if (this.page <= 0) this.page = this.step * 10;
 		clamp_value();
+		if (@text != null) this.text = text;
 	}
 	void clamp_value() {
 		value = clamp(value, min_value, max_value);
@@ -41,28 +42,23 @@ class nv_form_slider: nv_form_control {
 			set_value(value - step);
 			speak(text_value);
 			return true;
-		}
-		if (key_repeating(KEY_UP)) {
+		} else if (key_repeating(KEY_UP)) {
 			set_value(value + step);
 			speak(text_value);
 			return true;
-		}
-		if (key_repeating(KEY_PAGEUP)) {
+		} else if (key_repeating(KEY_PAGEUP)) {
 			set_value(value + page);
 			speak(text_value);
 			return true;
-		}
-		if (key_repeating(KEY_PAGEDOWN)) {
+		} else if (key_repeating(KEY_PAGEDOWN)) {
 			set_value(value - page);
 			speak(text_value);
 			return true;
-		}
-		if (key_repeating(KEY_HOME)) {
+		} else if (key_repeating(KEY_HOME)) {
 			set_value(min_value);
 			speak(text_value);
 			return true;
-		}
-		if (key_repeating(KEY_END)) {
+		} else if (key_repeating(KEY_END)) {
 			set_value(max_value);
 			speak(text_value);
 			return true;

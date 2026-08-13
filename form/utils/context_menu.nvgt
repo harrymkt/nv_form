@@ -1,30 +1,38 @@
 class nv_form_context_menu_item: nv_form_list_item {
-	nv_form_control_callback@ callback;
-	nv_form_context_menu_item(const string &in text, const string &in id, nv_form_control_callback@ callback) {
+	nv_form_context_menu_callback@ callback;
+	nv_form_context_menu_item(const string &in text, const string &in id, nv_form_context_menu_callback@ callback) {
 		super(text, id);
 		@this.callback = @callback;
 	}
 }
 class nv_form_context_menu : nv_utility_form {
-	nv_form@ parent_form;
-	nv_form_control@ owner_control;
+	nv_form@ parent;
+	nv_form_control@ ctrl;
 	nv_form_context_menu_item@[] items;
-	nv_form f;
+	protected nv_form f;
 	nv_form_list_box@ list;
 	string title;
 	bool change_screen_title, say_dialog;
-	nv_form_context_menu(nv_form@ parent_form, nv_form_control@ owner_control, const string &in title = "Context Menu", bool change_screen_title = false, bool say_dialog = true) {
-		@this.parent_form = @parent_form;
-		@this.owner_control = @owner_control;
+	nv_form_context_menu_callback@ default_callback;
+	nv_form_context_menu(nv_form@ parent, nv_form_control@ ctrl, const string &in title = "Context Menu", bool change_screen_title = false, bool say_dialog = true, nv_form_context_menu_callback@ callback = null) {
+		@this.parent = @parent;
+		@this.ctrl = @ctrl;
 		this.title = title;
 		this.change_screen_title = change_screen_title;
 		this.say_dialog = say_dialog;
+		@default_callback = @callback;
 	}
-	void add_item(const string &in text, nv_form_control_callback@ callback) {
-		items.insert_last(nv_form_context_menu_item(text, text, @callback));
+	void add_item(const string &in text, nv_form_context_menu_callback@ callback) {
+		add_item(text, text, @callback);
 	}
-	void add_item(const string &in text, const string &in id, nv_form_control_callback@ callback) {
+	void add_item(const string &in text) {
+		add_item(text, default_callback);
+	}
+	void add_item(const string &in text, const string &in id, nv_form_context_menu_callback@ callback) {
 		items.insert_last(nv_form_context_menu_item(text, id, @callback));
+	}
+	void add_item(const string &in text, const string &in id) {
+		add_item(text, id, default_callback);
 	}
 	void show() {
 		if (items.length() == 0 || f.active) return;
@@ -33,15 +41,14 @@ class nv_form_context_menu : nv_utility_form {
 		for (uint i = 0; i < items.length(); i++) {
 			list.add(items[i].text, items[i].id);
 		}
-		list.list_position = 0;
 		nv_form_button@ ok_btn = f.add_button("Ok", "ok", true);
 		ok_btn.hidden = true;
 		nv_form_button@ cancel_btn = f.add_button("Cancel", "cancel", false, true);
 		@cancel_btn.shortcut = nv_shortcut(KEY_C, alt = true);
 		cancel_btn.hidden = true;
-		@f.background_callback = parent_form.background_callback;
+		@f.background_callback = parent.background_callback;
 		f.focus_control(list, false, false);
-		@parent_form.nv_utility_form = this;
+		@parent.nv_utility_form = this;
 	}
 	void monitor() {
 		if (!f.monitor()) {
@@ -54,15 +61,15 @@ class nv_form_context_menu : nv_utility_form {
 		} else if (f.is_pressed("ok")) {
 			int idx = list.list_position;
 			if (idx >= 0 && idx < items.length()) {
-				nv_form_control_callback@ cb = items[idx].callback;
+				nv_form_context_menu_callback@ cb = items[idx].callback;
 				close(true);
-				if (@cb != null) cb(owner_control);
+				if (@cb != null) cb(this);
 			}
 		}
 	}
 	private void close(bool silent = false) {
-		@parent_form.nv_utility_form = null;
+		@parent.nv_utility_form = null;
 		f.reset();
-		parent_form.focus_control(owner_control, silent);
+		parent.focus_control(ctrl, silent);
 	}
 }

@@ -74,7 +74,7 @@ void main() {
 	@kbd.shortcut = nv_shortcut(KEY_G, alt = true);
 	nv_form_progress_bar@progress = nv_form_progress_bar(f, "downloading file", "progress");
 	progress.speak_progress_updates = false;
-	f.add_control(@progress, position = 6);
+	f.add_control(@progress, position = 7);
 	nv_form_link@ link = f.add_link("Open NVGT Website", "https://nvgt.dev", "nvgtweb");
 	f.controls[1].focus(false, false);
 	while (true) {

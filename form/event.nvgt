@@ -43,9 +43,9 @@ class nv_form_event_dispatcher {
 	}
 }
 class nv_form_event {
-	nv_form_event_type type;
+	int type;
 	nv_form_control@ ctrl;
-	nv_form_event(nv_form_control@ ctrl, nv_form_event_type type) {
+	nv_form_event(nv_form_control@ ctrl, int type) {
 		@this.ctrl = @ctrl;
 		this.type = type;
 	}
@@ -58,5 +58,6 @@ enum nv_form_event_type {
 	NV_FORM_EVENT_SLIDER_CHANGED,
 	NV_FORM_EVENT_SWITCH_CHANGED,
 	NV_FORM_EVENT_INPUT,
-	NV_FORM_EVENT_LIST
+	NV_FORM_EVENT_LIST,
+	NV_FORM_EVENT_TREEVIEW
 }

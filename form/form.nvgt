@@ -3,10 +3,10 @@
 #include "enums.nvgt"
 #include "event.nvgt"
 #include "events/*.nvgt"
+#include "funcdefs.nvgt"
 #include "helper.nvgt"
-#include "nv_form_funcdefs.nvgt"
-#include "utilities.nvgt"
 #include "speech.nvgt"
+#include "utilities.nvgt"
 string nvform_word_separators = "_ .,!\\\"/[{()}]=\n:|";
 int nvform_keyboard_echo = TEXTFLAG_ENTRY_CHARACTERS;
 nv_form_event_handler@ default_nv_form_event_handler = null;
@@ -18,7 +18,7 @@ class nv_form {
 	bool rely_on_nvform_echo = true;
 	string window_title;
 	bool speak_control_attributes_separately = false;
-	private int __tap_timeout__ = 200;
+	protected int __tap_timeout__ = 200;
 	bool active = false;
 	private nv_form_errorcode[] errors;
 	nv_form_control@primary_control = null, cancel_control = null;
@@ -175,7 +175,7 @@ class nv_form {
 		}
 		if (handled) return true;
 		bool found_shortcut = false;
-		int sposition = clamp(control_index + 1, 0, int(controls.length()) - 1);
+		int sposition = clamp(control_index + 1, 0, controls.length() - 1);
 		for (uint i = sposition; i < controls.length(); i++) {
 			if (@controls[i] == null || @controls[i].shortcut == null) continue;
 			if (controls[i].check_shortcut()) {
@@ -186,7 +186,8 @@ class nv_form {
 			}
 		}
 		if (!found_shortcut) {
-			foreach (nv_form_control@ l: controls) {
+			for (uint i = 0; i < controls.length(); i++) {
+				nv_form_control@l = controls[i];
 				if (@l == null || @l.shortcut == null) continue;
 				if (l.check_shortcut()) {
 					l.shortcut_focus();
@@ -331,8 +332,8 @@ class nv_form {
 		if (added) return lst;
 		return null;
 	}
-	nv_form_slider@ add_slider(const string &in caption, const string &in id = "", double min_value = 0, double max_value = 100, double step_size = 1, double initial_value = 0, double page_size = 0, int position = -1) {
-		nv_form_slider slide(this, caption, id, min_value, max_value, step_size, initial_value, page_size);
+	nv_form_slider@ add_slider(const string &in caption, const string &in id = "", double min_value = 0, double max_value = 100, double step_size = 1, double initial_value = 0, double page_size = 0, int position = -1, dictionary@ text = null) {
+		nv_form_slider slide(this, caption, id, min_value, max_value, step_size, initial_value, page_size, text);
 		bool added = add_control(@slide, position = position);
 		if (added) return slide;
 		return null;

@@ -12,7 +12,7 @@ shared int nv_string_contains(const string &in str, const string &in search, int
 	return c == occurance ? pos : -1;
 }
 // Wrapper functions for keyboard echo changing.
-shared uint nvform_change_keyboard_echo(int keyboard_echo, int dir = 1) {
+shared int nvform_change_keyboard_echo(int keyboard_echo, int dir = 1) {
 	keyboard_echo += dir;
 	if (keyboard_echo < TEXTFLAG_ENTRY_NONE) keyboard_echo = TEXTFLAG_ENTRY_CHARACTERS_WORDS;
 	else if (keyboard_echo > TEXTFLAG_ENTRY_CHARACTERS_WORDS) keyboard_echo = TEXTFLAG_ENTRY_NONE;

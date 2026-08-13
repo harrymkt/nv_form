@@ -11,6 +11,12 @@ void main() {
 	@inp.context_menu = nv_form_context_menu(f, inp);
 	inp.context_menu.add_item("Clear Text", on_clear);
 	inp.context_menu.add_item("Say Hello", on_hello);
+	nv_form_list_box@ lst = f.add_list("List with context menu", "list");
+	lst.add("A", "a");
+	lst.add("B", "b");
+	@lst.context_menu = nv_form_context_menu(f, lst, callback = on_lst_call);
+	lst.context_menu.add_item("Inspect", "i");
+	lst.context_menu.add_item("Copy item name", "c");
 	nv_form_button@ close_btn = f.add_button("Close", "close", cancel = true);
 	@close_btn.shortcut = nv_shortcut(KEY_C, alt = true);
 	wait(250);
@@ -19,12 +25,12 @@ void main() {
 		wait(5);
 	}
 }
-bool on_option(nv_form_control@ ctrl) {
-	alert("Context Menu", "You selected an option from the menu attached to: " + ctrl.caption + ". It is: " + ctrl.context_menu.list.focused_item.id);
+bool on_option(nv_form_context_menu@ cm) {
+	alert("Context Menu", "You selected an option from the menu attached to: " + cm.ctrl.caption + ". It is: " + cm.list.focused_item.id);
 	return true;
 }
-bool on_clear(nv_form_control@ ctrl) {
-	nv_form_input@ inp = cast<nv_form_input@>(ctrl);
+bool on_clear(nv_form_context_menu@ cm) {
+	nv_form_input@ inp = cast<nv_form_input@>(cm.ctrl);
 	if (@inp != null) {
 		inp.text = "";
 		inp.cursor = 0;
@@ -32,7 +38,26 @@ bool on_clear(nv_form_control@ ctrl) {
 	}
 	return true;
 }
-bool on_hello(nv_form_control@ ctrl) {
+bool on_hello(nv_form_context_menu@ cm) {
 	speak("Hello from the context menu!");
+	return true;
+}
+bool on_lst_call(nv_form_context_menu@ ctx) {
+	string sl = ctx.list.focused_item_id;
+	if (sl == "") return false;
+	nv_form_list_box@ ctrl = cast<nv_form_list_box@>(ctx.ctrl);
+	if (@ctrl == null) return false; // Invalid control.
+	if (ctrl.focused_item_id == "") {
+		speak("Select an item first");
+		return false;
+	}
+	if (sl == "i") {
+		alert("Info", "Current position is " + ctrl.list_position + ", selected ID is " + ctrl.focused_item_id);
+		return true;
+	} else if (sl == "c") {
+		clipboard_set_text(ctrl.focused_item_id);
+		speak("Copied");
+		return true;
+	}
 	return true;
 }
