@@ -1,4 +1,4 @@
-#pragma include "../src"
+#pragma include ".."
 #include "form/form.nvgt"
 void main() {
 	nv_form f;
