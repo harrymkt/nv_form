@@ -1,4 +1,4 @@
-#include "form/form.nvgt"
+#include "src/form/form.nvgt"
 class custom_button: nv_form_button {
 	custom_button(nv_form@parent) {
 		super(@parent, "press this now", "click");

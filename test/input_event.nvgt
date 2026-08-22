@@ -1,4 +1,4 @@
-#pragma include ".."
+#pragma include "../src"
 #include "form/form.nvgt"
 uint fclcount = 0;
 void main() {

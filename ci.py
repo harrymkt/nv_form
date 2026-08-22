@@ -1,5 +1,5 @@
 folders = [
-	"form"
+	"src/form"
 ]
 
 import os
@@ -92,8 +92,9 @@ def main():
 	print("Processing CI...")
 	pr = ""
 	version = ""
-	for x in folders:
-		zip(x, f"{x}.zip")
+	for xp in folders:
+		x = os.path.basename(xp)
+		zip(xp, f"{x}.zip")
 		print(f"{x}.zip created")
 		d = None
 		with open(f"{x}.json", "r", encoding="utf-8") as f:
