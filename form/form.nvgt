@@ -5,11 +5,14 @@
 #include "events/*.nvgt"
 #include "funcdefs.nvgt"
 #include "helper.nvgt"
+#include "shortcut.nvgt"
 #include "speech.nvgt"
 #include "utilities.nvgt"
+
 string nvform_word_separators = "_ .,!\\\"/[{()}]=\n:|";
 int nvform_keyboard_echo = TEXTFLAG_ENTRY_CHARACTERS;
 nv_form_event_handler@ default_nv_form_event_handler = null;
+
 class nv_form {
 	nv_form_control@[]controls;
 	int max_controls = 0;

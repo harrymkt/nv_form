@@ -1,4 +1,5 @@
 #include "utils/*.nvgt"
+
 string get_nv_form_control_type_string(int ct) {
 	switch (ct) {
 		case NV_FORM_CT_BUTTON: return "button";
@@ -19,6 +20,28 @@ string get_nv_form_control_type_string(int ct) {
 }
 interface nv_utility_form {
 	void monitor();
+}
+bool handle_nv_utils(nv_form_control@ ctrl) {
+	if (@ctrl == null) return false;
+	int[] supported_types = {NV_FORM_CT_LIST, NV_FORM_CT_INPUT, NV_FORM_CT_TREEVIEW};
+	if (supported_types.find(ctrl.type) < 0) return false;
+	nv_form_input@ inp = cast < nv_form_input@ > (ctrl);
+	if (@inp != null && inp.password_mask != "") return false;
+	if (keyboard_modifiers & KEYMOD_CTRL != 0 && key_pressed(KEY_G) && ctrl.enable_go_line) {
+		nv_go_to_index(ctrl.parent, ctrl);
+		return true;
+	} else if (keyboard_modifiers & KEYMOD_CTRL != 0 && key_pressed(KEY_F) && ctrl.enable_search) {
+		nv_search_for(ctrl.parent, ctrl);
+		return true;
+	} else if (key_repeating(KEY_F3)) {
+		string last_search = "";
+		if (ctrl.parent.nv_utility_form_data.get("last_search", last_search))
+			ctrl.parent.search(ctrl, last_search, keyboard_modifiers & KEYMOD_SHIFT == 0 ? 1 : -1, false);
+		else
+			nv_search_for(ctrl.parent, ctrl);
+		return true;
+	}
+	return false;
 }
 class nv_go_to_index : nv_utility_form {
 	nv_form@ parent;
@@ -53,6 +76,7 @@ class nv_go_to_index : nv_utility_form {
 		f_index.select(0);
 		f_index.enable_go_line = false;
 		f_index.enable_search = false;
+		f_index.set_disallowed_chars("0123456789", true);
 		f.add_control(f_index);
 		nv_form_control@ index_to_focus = f_index;
 		if (@ctrl_input != null) {
@@ -61,13 +85,14 @@ class nv_go_to_index : nv_utility_form {
 			f_col.select(0);
 			f_col.enable_go_line = false;
 			f_col.enable_search = false;
+			f_col.set_disallowed_chars("0123456789", true);
 			f.add_control(f_col);
 			if (!ctrl_input.multiline) {
 				@index_to_focus = f_col;
 				f_index.hide();
 			}
 		}
-		@f_ok = f.add_button("Ok", "ok", true);
+		@f_ok = f.add_button("Go", "ok", true);
 		@f_cancel = f.add_button("Cancel", "cancel", false, true);
 		@f.background_callback = parent.background_callback;
 		f.focus_control(index_to_focus, false, false);
@@ -149,10 +174,10 @@ class nv_search_for : nv_utility_form {
 		) return;
 		string current = "";
 		if (parent.nv_utility_form_data.exists("last_search")) parent.nv_utility_form_data.get("last_search", current);
-		string wmsg = "Search for text";
+		string wmsg = "Search for Text";
 		string lnmsg = "Text to search";
 		if (@ctrl_list != null || @ctrl_tree != null)
-			wmsg = "Search for item";
+			wmsg = "Search for Item";
 		f.create_window(wmsg, false, true);
 		@f_text = f.add_input(lnmsg, "ln", current, "", 256);
 		f_text.select(0);
@@ -181,12 +206,12 @@ class nv_search_for : nv_utility_form {
 		} else if (nv_search_forward or f.is_pressed(f_prev)) {
 			string text = f_text.text;
 			if (text == "") {
-				speak("enter some text to search for");
+				speak("Enter some text to search for");
 				f.focus_control(f_text, false, false);
 				return;
 			}
 			if (!parent.search(ctrl, text, nv_search_forward ? 1 : -1)) {
-				speak("nothing found");
+				speak("Nothing found");
 				f.focus_control(f_text, false, false);
 			} else {
 				@parent.nv_utility_form = null;
@@ -195,26 +220,4 @@ class nv_search_for : nv_utility_form {
 			return;
 		}
 	}
-}
-bool handle_nv_utils(nv_form_control@ ctrl) {
-	if (@ctrl == null) return false;
-	int[] supported_types = {NV_FORM_CT_LIST, NV_FORM_CT_INPUT, NV_FORM_CT_TREEVIEW};
-	if (supported_types.find(ctrl.type) < 0) return false;
-	nv_form_input@ inp = cast < nv_form_input@ > (ctrl);
-	if (@inp != null && inp.password_mask != "") return false;
-	if ((keyboard_modifiers & KEYMOD_CTRL) != 0 && key_pressed(KEY_G) && ctrl.enable_go_line) {
-		nv_go_to_index(ctrl.parent, ctrl);
-		return true;
-	} else if ((keyboard_modifiers & KEYMOD_CTRL) != 0 && key_pressed(KEY_F) && ctrl.enable_search) {
-		nv_search_for(ctrl.parent, ctrl);
-		return true;
-	} else if (key_repeating(KEY_F3)) {
-		string last_search = "";
-		if (ctrl.parent.nv_utility_form_data.get("last_search", last_search))
-			ctrl.parent.search(ctrl, last_search, (keyboard_modifiers & KEYMOD_SHIFT) == 0 ? 1 : -1, false);
-		else
-			nv_search_for(ctrl.parent, ctrl);
-		return true;
-	}
-	return false;
 }
