@@ -73,13 +73,13 @@ class nv_form_list_box: nv_form_control {
 			if (i < 0 || i >= items.length()) continue;
 			if (i == list_position) continue;
 			if (items[i].text.lower().substr(0, prefix.length()) == prefix) {
-				if (current_prefix == prefix && prefix.length() > 1) return list_position;
+				if (current_prefix == prefix && prefix.length() > 1) return -1;
 				return i;
 			}
 		}
 		for (uint i = 0; i < items.length(); i++) {
 			if (items[i].text.lower().substr(0, prefix.length()) == prefix) {
-				if (current_prefix == prefix && prefix.length() > 1) return list_position;
+				if (current_prefix == prefix && prefix.length() > 1) return -1;
 				return i;
 			}
 		}
@@ -100,11 +100,9 @@ class nv_form_list_box: nv_form_control {
 				if (position < 0) {
 					return false;
 				}
-				if (position != list_position) {
-					set_pos(position, fire_event = true);
+				if (set_pos(position, fire_event = true)) {
 					if (list_position >= 0 && list_position < items.length() && @items[list_position] != null) speak(speak_list_item(items[list_position]));
 				}
-				else if (list_position >= 0 && list_position < items.length() && @items[list_position] != null) speak(speak_list_item(items[list_position]));
 				return true;
 			}
 		}

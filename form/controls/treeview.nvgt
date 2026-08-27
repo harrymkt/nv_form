@@ -149,13 +149,13 @@ class nv_form_treeview : nv_form_control {
 			if (i < 0 || i >= visible_nodes.length()) continue;
 			if (i == pos) continue;
 			if (visible_nodes[i].text.lower().substr(0, prefix.length()) == prefix) {
-				if (current_prefix == prefix && prefix.length() > 1) return pos;
+				if (current_prefix == prefix && prefix.length() > 1) return -1;
 				return i;
 			}
 		}
 		for (uint i = 0; i < visible_nodes.length(); i++) {
 			if (visible_nodes[i].text.lower().substr(0, prefix.length()) == prefix) {
-				if (current_prefix == prefix && prefix.length() > 1) return pos;
+				if (current_prefix == prefix && prefix.length() > 1) return -1;
 				return i;
 			}
 		}
@@ -177,9 +177,7 @@ class nv_form_treeview : nv_form_control {
 				if (position < 0) {
 					return false;
 				}
-				if (position != pos) {
-					if (set_pos(position, false, fire_event = true)) speak_current_node();
-				} else speak_current_node();
+				if (set_pos(position, false, fire_event = true)) speak_current_node();
 				return true;
 			}
 		}
