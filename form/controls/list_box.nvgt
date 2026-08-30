@@ -7,6 +7,7 @@ class nv_form_list_box: nv_form_control {
 	bool multinav = true;
 	timer multinavtime;
 	string multichar;
+	int page_size = 10;
 	nv_form_list_box(nv_form@parent, const string &in caption, const string &in id = "", bool allow_multiselect = false, nv_form_list_item@[] items = {}, int max_items = -1, bool speak_position = false) {
 		super(caption, id, NV_FORM_CT_LIST, @parent);
 		multiselect = allow_multiselect;
@@ -21,14 +22,14 @@ class nv_form_list_box: nv_form_control {
 	string get_focused_item_id() const property {
 		return (@focused_item != null ? focused_item.id : "");
 	}
-	bool navigate(bool next = true) {
+	bool navigate(bool next = true, int step = 1) {
 		if (items.length() <= 0) {
 			parent.error(NV_FORM_ERROR_LIST_EMPTY);
 			return false;
 		}
 		int index = list_position;
-		if (next) index += 1;
-		else index -= 1;
+		if (next) index += step;
+		else index -= step;
 		return set_pos(index, fire_event = true);
 	}
 	bool set_pos(int index, bool autobound = true, bool fire_event = false) {
@@ -113,6 +114,16 @@ class nv_form_list_box: nv_form_control {
 		}
 		if (key_repeating(KEY_DOWN)) {
 			bool nav = navigate();
+			if (nav && @focused_item != null) speak(speak_list_item(focused_item));
+			return true;
+		}
+		if (key_repeating(KEY_PAGEUP)) {
+			bool nav = navigate(false, page_size);
+			if (nav && @focused_item != null) speak(speak_list_item(focused_item));
+			return true;
+		}
+		if (key_repeating(KEY_PAGEDOWN)) {
+			bool nav = navigate(true, page_size);
 			if (nav && @focused_item != null) speak(speak_list_item(focused_item));
 			return true;
 		}

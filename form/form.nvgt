@@ -145,6 +145,10 @@ class nv_form {
 				if (@sug != null) {
 					if (key_repeating(KEY_DOWN)) handled = sug.handle_key(KEY_DOWN);
 					else if (key_repeating(KEY_UP)) handled = sug.handle_key(KEY_UP);
+					else if (key_repeating(KEY_PAGEUP)) handled = sug.handle_key(KEY_PAGEUP);
+					else if (key_repeating(KEY_PAGEDOWN)) handled = sug.handle_key(KEY_PAGEDOWN);
+					else if (key_pressed(KEY_HOME)) handled = sug.handle_key(KEY_HOME);
+					else if (key_pressed(KEY_END)) handled = sug.handle_key(KEY_END);
 					else if (key_pressed(KEY_RETURN)) handled = sug.handle_key(KEY_RETURN);
 					else if (key_pressed(KEY_NUMPAD_ENTER)) handled = sug.handle_key(KEY_NUMPAD_ENTER);
 					else if (key_pressed(KEY_TAB)) handled = sug.handle_key(KEY_TAB);

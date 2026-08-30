@@ -7,15 +7,25 @@ class nv_form_suggestion_manager : nv_utility_form {
 	nv_form_list_box@ list;
 	bool active = false;
 	string last_spoken_match = "";
-	nv_form_suggestion_manager(nv_form@ parent_form, nv_form_input@ owner_input) {
+	int last_spoken_position = 0;
+	bool speak_position = false;
+	int page_size = 10;
+	nv_form_suggestion_manager(nv_form@ parent_form, nv_form_input@ owner_input, bool speak_position = false, int page_size = 10) {
 		@this.parent_form = @parent_form;
 		@this.owner_input = @owner_input;
+		this.speak_position = speak_position;
+		this.page_size = page_size;
 	}
 	void add_suggestion(const string &in s) {
 		suggestions.insert_last(s);
 	}
 	void add_suggestions(const string[] &in s) {
 		for (uint i = 0; i < s.length(); i++) suggestions.insert_last(s[i]);
+	}
+	string str(const string &in t, int pos = 0) {
+		string f = t;
+		if (speak_position) f += "  " + (pos + 1) + " of " + current_matches.length();
+		return f;
 	}
 	void update() {
 		string text = owner_input.text.lower();
@@ -41,7 +51,8 @@ class nv_form_suggestion_manager : nv_utility_form {
 	private void show() {
 		active = true;
 		f.create_window("Suggestions available", false, false);
-		@list = f.add_list("Suggestions", "sug", false);
+		@list = f.add_list("Suggestions", "sug", false, speak_position = speak_position);
+		list.page_size = page_size;
 		nv_form_button@ cancel_btn = f.add_button("Cancel", "cancel", false, true);
 		@cancel_btn.shortcut = nv_shortcut(KEY_C, alt = true);
 		cancel_btn.hidden = true;
@@ -56,7 +67,8 @@ class nv_form_suggestion_manager : nv_utility_form {
 		list.list_position = 0;
 		if (current_matches[0] != last_spoken_match) {
 			last_spoken_match = current_matches[0];
-			speak(last_spoken_match, interrupt);
+			last_spoken_position = 0;
+			speak(str(last_spoken_match, last_spoken_position), interrupt);
 		}
 	}
 	void monitor() {
@@ -65,14 +77,26 @@ class nv_form_suggestion_manager : nv_utility_form {
 	}
 	bool handle_key(int key) {
 		if (!active) return false;
-		if (key == KEY_DOWN) {
-			if (list.navigate(true)) {
+		if (key == KEY_UP || key == KEY_PAGEUP) {
+			if (list.navigate(false, key == KEY_PAGEUP ? page_size : 1)) {
 				speak(list.speak_list_item(list.focused_item));
 			}
 			return true;
 		}
-		if (key == KEY_UP) {
-			if (list.navigate(false)) {
+		if (key == KEY_DOWN || key == KEY_PAGEDOWN) {
+			if (list.navigate(true, key == KEY_PAGEDOWN ? page_size : 1)) {
+				speak(list.speak_list_item(list.focused_item));
+			}
+			return true;
+		}
+		if (key == KEY_HOME) {
+			if (list.set_pos(0, fire_event = true)) {
+				speak(list.speak_list_item(list.focused_item));
+			}
+			return true;
+		}
+		if (key == KEY_END) {
+			if (list.set_pos(list.items.length() - 1, fire_event = true)) {
 				speak(list.speak_list_item(list.focused_item));
 			}
 			return true;
