@@ -1,5 +1,6 @@
 #pragma include ".."
 #include "form/form.nvgt"
+
 uint fclcount = 0;
 void main() {
 	nv_form f;
@@ -27,7 +28,7 @@ void input_event(nv_form_event@ event) {
 	if (@e == null) return;
 	if (e.deleted) {
 		string s = "keyboard/delete.ogg";
-		// Play the sound
+		// Play the deletion sound
 		return;
 	}
 	string k = "type_key";
@@ -35,7 +36,7 @@ void input_event(nv_form_event@ event) {
 	if (c == " ") k = "space";
 	else if (c == "\n") k = "return";
 	string s = "keyboard/" + k + ".ogg";
-	// Play the sound
+	// Play the typing sound
 }
 void selectinput(nv_form_event@ e) {
 	if (e.type != NV_FORM_EVENT_FOCUS_GAINED) return;

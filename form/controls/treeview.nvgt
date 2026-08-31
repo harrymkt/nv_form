@@ -51,6 +51,7 @@ class nv_form_treeview : nv_form_control {
 	bool multinav = true;
 	timer multinavtime;
 	string multichar;
+	int page_size = 10;
 	nv_form_treeview(nv_form@ parent, const string &in caption, const string &in id = "") {
 		super(caption, id, NV_FORM_CT_TREEVIEW, @parent);
 	}
@@ -182,6 +183,13 @@ class nv_form_treeview : nv_form_control {
 			}
 		}
 		nv_form_tree_node@ node = focused_node;
+		if (key_repeating(KEY_UP)) {
+			if (pos > 0) {
+				set_pos(pos - 1, fire_event = true);
+				speak_current_node();
+				return true;
+			}
+		}
 		if (key_repeating(KEY_DOWN)) {
 			if (pos < visible_nodes.length() - 1) {
 				set_pos(pos + 1);
@@ -189,9 +197,16 @@ class nv_form_treeview : nv_form_control {
 				return true;
 			}
 		}
-		if (key_repeating(KEY_UP)) {
+		if (key_repeating(KEY_PAGEUP)) {
 			if (pos > 0) {
-				set_pos(pos - 1, fire_event = true);
+				set_pos(pos - page_size, fire_event = true);
+				speak_current_node();
+				return true;
+			}
+		}
+		if (key_repeating(KEY_PAGEDOWN)) {
+			if (pos < visible_nodes.length() - 1) {
+				set_pos(pos + page_size);
 				speak_current_node();
 				return true;
 			}
@@ -229,12 +244,12 @@ class nv_form_treeview : nv_form_control {
 				}
 			}
 		}
-		if (key_repeating(KEY_HOME)) {
+		if (key_pressed(KEY_HOME)) {
 			set_pos(0, fire_event = true);
 			speak_current_node();
 			return true;
 		}
-		if (key_repeating(KEY_END)) {
+		if (key_pressed(KEY_END)) {
 			set_pos(visible_nodes.length() - 1, fire_event = true);
 			speak_current_node();
 			return true;

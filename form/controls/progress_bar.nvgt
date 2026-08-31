@@ -36,7 +36,6 @@ class nv_form_progress_bar: nv_form_control {
 	}
 	void set_value(double v) property {
 		if (v < min_value || v > max_value) {
-			parent.error(NV_FORM_ERROR_INVALID_VALUE);
 			return;
 		}
 		bool should_speak = abs(v - last_spoken_value) >= update_interval;

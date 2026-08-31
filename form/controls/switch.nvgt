@@ -11,7 +11,6 @@ class nv_form_switch: nv_form_control {
 	}
 	bool get_next() property {
 		if (items.length() <= 0) {
-			parent.error(NV_FORM_ERROR_SWITCH_EMPTY);
 			return false;
 		}
 		int x = index;
@@ -22,7 +21,6 @@ class nv_form_switch: nv_form_control {
 	}
 	bool set_pos(int value) {
 		if (items.length() <= 0) {
-			parent.error(NV_FORM_ERROR_SWITCH_EMPTY);
 			return false;
 		}
 		if (value < 0) value = 0;
@@ -56,12 +54,10 @@ class nv_form_switch: nv_form_control {
 	}
 	bool delete (const string &in id) {
 		if (items.length() <= 0) {
-			parent.error(NV_FORM_ERROR_SWITCH_EMPTY);
 			return false;
 		}
 		int item_index = get_item_index(id);
 		if (item_index == -1) {
-			parent.error(NV_FORM_ERROR_INVALID_VALUE);
 			return false;
 		}
 		@items[item_index] = null;

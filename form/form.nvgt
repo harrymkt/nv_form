@@ -23,7 +23,6 @@ class nv_form {
 	bool speak_control_attributes_separately = false;
 	protected int __tap_timeout__ = 200;
 	bool active = false;
-	private nv_form_errorcode[] errors;
 	nv_form_control@primary_control = null, cancel_control = null;
 	nv_form_callback@background_callback = null;
 	nv_shortcut_manager@ shortcut;
@@ -90,13 +89,8 @@ class nv_form {
 		return null;
 	}
 	bool create_window(const string &in title, bool change_screen_title = true, bool say_dialog = true, bool silent = false) {
-		if (active) {
-			error(NV_FORM_ERROR_ALREADY_ACTIVE);
-			return false;
-		} else if (title.empty()) {
-			error(NV_FORM_ERROR_INVALID_OPERATION);
-			return false;
-		}
+		if (active) return false;
+		else if (title.empty()) return false;
 		window_title = title;
 		get_characters();
 		active = true;
@@ -157,7 +151,7 @@ class nv_form {
 				}
 			}
 			handled = ctrl.handle_input();
-			if (((keyboard_modifiers & KEYMOD_SHIFT) != 0 && key_pressed(KEY_F10)) || key_pressed(KEY_MENU) || key_pressed(KEY_APPLICATION)) {
+			if ((keyboard_modifiers & KEYMOD_SHIFT != 0 && key_pressed(KEY_F10)) || key_pressed(KEY_MENU) || key_pressed(KEY_APPLICATION)) {
 				if (@ctrl.context_menu != null) {
 					ctrl.context_menu.show();
 					return true;
@@ -205,23 +199,14 @@ class nv_form {
 		}
 		return handled;
 	}
-	void error(nv_form_errorcode error) {
-		errors.insert_last(error);
-	}
-	nv_form_errorcode get_last_error() const property {
-		if (errors.length() <= 0) return NV_FORM_ERROR_NONE;
-		return errors[errors.length() - 1];
-	}
 	bool is_pressed(const string &in control_id) {
 		nv_form_control@ctrl = get_control_by_id(control_id);
 		if (@ctrl == null || (ctrl.type != NV_FORM_CT_BUTTON && ctrl.type != NV_FORM_CT_LINK)) {
-			error(NV_FORM_ERROR_INVALID_CONTROL);
 			return false;
 		}
 		nv_form_button@btn = cast < nv_form_button@ > (ctrl);
 		nv_form_link@link = cast < nv_form_link@ > (ctrl);
 		if (@btn == null && @link == null) {
-			error(NV_FORM_ERROR_INVALID_CONTROL);
 			return false;
 		} else if (@btn != null) return is_pressed(btn);
 		else if (@link != null) return is_pressed(link);
@@ -229,7 +214,6 @@ class nv_form {
 	}
 	bool is_pressed(nv_form_button@btn) {
 		if (@btn.parent != this) {
-			error(NV_FORM_ERROR_INVALID_CONTROL);
 			return false;
 		}
 		bool result = btn.pressed;
@@ -238,7 +222,6 @@ class nv_form {
 	}
 	bool is_pressed(nv_form_link@link) {
 		if (@link.parent != this) {
-			error(NV_FORM_ERROR_INVALID_CONTROL);
 			return false;
 		}
 		bool result = link.pressed;
@@ -248,14 +231,12 @@ class nv_form {
 	bool is_checked(const string &in control_id) {
 		nv_form_checkbox@box = cast < nv_form_checkbox@ > (get_control_by_id(control_id));
 		if (@box == null) {
-			error(NV_FORM_ERROR_INVALID_CONTROL);
 			return false;
 		}
 		return is_checked(box);
 	}
 	bool is_checked(nv_form_checkbox@box) {
 		if (@box.parent != this) {
-			error(NV_FORM_ERROR_INVALID_CONTROL);
 			return false;
 		}
 		return box.state;
@@ -265,7 +246,6 @@ class nv_form {
 	}
 	nv_form_list_item@get_list_focus(nv_form_list_box@lst) {
 		if (@lst == null or @lst.parent != this) {
-			error(NV_FORM_ERROR_INVALID_CONTROL);
 			return null;
 		}
 		return lst.focused_item;
@@ -275,7 +255,6 @@ class nv_form {
 	}
 	nv_form_switch_item@get_switch_focus(nv_form_switch@lst) {
 		if (@lst == null or @lst.parent != this) {
-			error(NV_FORM_ERROR_INVALID_CONTROL);
 			return null;
 		}
 		return lst.focused_item;
@@ -285,7 +264,6 @@ class nv_form {
 	}
 	double get_slider_value(nv_form_slider@slider, double def = 0) {
 		if (@slider == null or @slider.parent != this) {
-			error(NV_FORM_ERROR_INVALID_CONTROL);
 			return def;
 		}
 		return slider.value;
@@ -373,15 +351,12 @@ class nv_form {
 	}
 	bool add_control(nv_form_control@ctrl, bool primary = false, bool cancel = false, int position = -1, nv_form_control_callback@callback = null) {
 		if (!active) {
-			error(NV_FORM_ERROR_NO_WINDOW);
 			return false;
 		}
 		if (max_controls > 0 and controls.length() >= max_controls) {
-			error(NV_FORM_ERROR_WINDOW_FULL);
 			return false;
 		}
 		if (@ctrl == null) {
-			error(NV_FORM_ERROR_INVALID_CONTROL);
 			return false;
 		}
 		if (@callback != null) @ctrl.callback = callback;

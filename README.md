@@ -1,18 +1,19 @@
 # NV Form
 NV Form (`nv_form`) is a new, redesigned auditory form written in and/or for [NVGT](https://nvgt.dev) scripting game engine. This is written to make audio form more modernized, now that the old form in NVGT is legacy.
 
-This is a modified version of [NV Form](https://github.com/ivansoto0/nv_form) originally written by Ivan Soto, as that repository is not being actively maintained.
+This is a modified version of [NV Form](https://github.com/ivansoto0/nv_form) originally written by Ivan Soto, as that repository is no longer being actively maintained.
 
 Original copyright notice:
 `Copyright (c) 2025 Ivan Soto`
 
-**Warning**! This version is no longer compatible with the old form from Ivan, such as enum value names are now uppercase as the API standards.
+**Warning!** This version is no longer compatible with the old form from Ivan, such as enum value names are now uppercase as the API standards.
 
 You can run [test.nvgt](test.nvgt) to get to know all the features. Usually every feature gets added to it as soon as implemented. For more tests, view the [test directory](test).
 
 ## Notes
 - This module is a new and redesigned module, but some parts may have copied from the original auditory form.
 - This module is also a modified version of the original NV Form created by Ivan Soto, and is no longer compatible with the origin API due to conventional name changes.
+- Unlike legacy modules, this module no longer uses error codes until a better solution is found. Currently only return values are used.
 - Controls, functions, events, and shortcut handlers, are now completely different from the ones that you use in the legacy modules. Therefore, if you cannot find a specific function, enum value, or constant; you cannot use a functionality; or functionality is different, it may not actually be a bug.
 - Shortcuts in the caption (label) with an ampersand (`&`) is no longer supported. Your form can now utilize `Ctrl`, `Shift`, and `Alt` all together rather than a limited `Alt` key alone in the legacy auditory form, as well as multitap shortcuts. Tip: If you want to use the old behavior, the only possible action is to create custom instance of `nv_form` as a child class, and modify and extend the `add_control` method.
 - Functionalities should be backwards compatible with the legacy form or even the origin NV Form, but please note that this is not the main intent of this module. If we believe that if a specific functionality is deemed unworthy, or having performance issues, it may be removed, modified, or replaced with an equivalent functionality.

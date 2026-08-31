@@ -1,5 +1,6 @@
 #pragma include ".."
 #include "form/form.nvgt"
+
 void main() {
 	nv_form f;
 	f.create_window("Slider Value Test");
@@ -7,6 +8,7 @@ void main() {
 	for (uint i = 0; i <= 512; i+= 8) {
 		string m = "Unlimited";
 		if (i == 512) m = "Maximum";
+		else if (i == 512 / 2) m = "Optimum";
 		else if (i != 0) m = i + " MB";
 		a.set_text(i, m);
 	}

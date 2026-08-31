@@ -6,6 +6,6 @@ Set or retrieve the background callback of the form.
 ## Remarks:
 Background callback is declared as the following:
 
-```
+```nvgt
 funcdef bool nv_form_callback(nv_form@f, dictionary@args = null);
 ```

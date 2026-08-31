@@ -1,4 +1,5 @@
 #include "../form/form.nvgt"
+
 void main() {
 	nv_form f;
 	f.create_window("Context Menu Test", say_dialog = true);

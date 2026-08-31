@@ -24,7 +24,6 @@ class nv_form_list_box: nv_form_control {
 	}
 	bool navigate(bool next = true, int step = 1) {
 		if (items.length() <= 0) {
-			parent.error(NV_FORM_ERROR_LIST_EMPTY);
 			return false;
 		}
 		int index = list_position;
@@ -34,7 +33,6 @@ class nv_form_list_box: nv_form_control {
 	}
 	bool set_pos(int index, bool autobound = true, bool fire_event = false) {
 		if (items.length() <= 0) {
-			parent.error(NV_FORM_ERROR_LIST_EMPTY);
 			return false;
 		}
 		if (autobound) {
@@ -155,7 +153,6 @@ class nv_form_list_box: nv_form_control {
 	}
 	bool set_item_selected_state(int item_index, bool selected) {
 		if (items.length() <= 0 || (item_index<0 || item_index >= items.length())) {
-			parent.error(NV_FORM_ERROR_INVALID_LIST_INDEX);
 			return false;
 		}
 		if (!multiselect and selected == true)
@@ -166,7 +163,6 @@ class nv_form_list_box: nv_form_control {
 	bool clear_list_selections() {
 		int[]@sel = get_list_selections();
 		if (sel.length() <= 0) {
-			parent.error(NV_FORM_ERROR_NO_SELECTIONS);
 			return false;
 		}
 		for (uint i = 0; i < sel.length(); i += 1) {
@@ -177,7 +173,6 @@ class nv_form_list_box: nv_form_control {
 	}
 	bool add(const string &in item, const string &in id = "", bool selected = false) {
 		if (max_items > 0 and items.length() >= max_items) {
-			parent.error(NV_FORM_ERROR_LIST_FULL);
 			return false;
 		}
 		items.insert_last(nv_form_list_item(item, id, selected));
@@ -189,12 +184,10 @@ class nv_form_list_box: nv_form_control {
 	}
 	bool delete (const string &in id) {
 		if (items.length() <= 0) {
-			parent.error(NV_FORM_ERROR_LIST_EMPTY);
 			return false;
 		}
 		int item_index = get_item_index(id);
 		if (item_index == -1) {
-			parent.error(NV_FORM_ERROR_INVALID_VALUE);
 			return false;
 		}
 		@items[item_index] = null;

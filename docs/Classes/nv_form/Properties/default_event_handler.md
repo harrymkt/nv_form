@@ -11,7 +11,7 @@ It is registered through `nv_form_event_dispatcher::add`, which means a control 
 The form picks up its starting value from the global `default_nv_form_event_handler` whenever it is reset, so setting that global once gives every form in your program the same default. Assigning null here leaves new controls without a default handler.
 
 ## Example:
-```
+```nvgt
 nv_form f;
 @f.default_event_handler = ui_sounds;
 f.create_window("Settings");
