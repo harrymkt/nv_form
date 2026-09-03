@@ -51,6 +51,8 @@ class nv_form_input: nv_form_control {
 		string[] f;
 		if (password_mask != "") f.insert_last("protected");
 		if (multiline) f.insert_last("multi line");
+		string[] g = control_info_array;
+		if (g.length() > 0) f.extend(g);
 		return join(f, " ");
 	}
 	bool handle_input() {

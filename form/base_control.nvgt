@@ -3,6 +3,7 @@ abstract class nv_form_control {
 	string custom_type = "";
 	string caption;
 	string id;
+	string description;
 	protected nv_shortcut@ __shortcut = null;
 	nv_form@parent;
 	bool speak_shortcut = true, autoactivate = false;
@@ -66,7 +67,14 @@ abstract class nv_form_control {
 	void on_fire() { }
 	void on_focus_gained_immediate() { }
 	void on_focus_gained() { }
-	string get_control_info() { return ""; }
+	string[] get_control_info_array() property {
+		string[] f;
+		if (description != "") f.insert_last(description);
+		return f;
+	}
+	string get_control_info() {
+		return join(control_info_array, "  ");
+	}
 	string get_fixed_type_first() property { return ""; }
 	string get_fixed_type_last() property { return ""; }
 	bool check_shortcut() {

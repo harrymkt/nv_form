@@ -255,6 +255,9 @@ class nv_form_list_box: nv_form_control {
 			speak(already_on_result ? "nothing else found" : "nothing found");
 		return false;
 	}
+	string get_fixed_type_last() property {
+		return join(control_info_array, "  ");
+	}
 	string get_control_info() {
 		nv_form_list_item@item = focused_item;
 		if (@item == null) return "";

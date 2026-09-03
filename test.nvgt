@@ -22,6 +22,7 @@ void main() {
 	@inp.shortcut = nv_shortcut(KEY_E, false, false, true);
 	f.add_control(inp);
 	nv_form_input@ inp2 = nv_form_input(f, "Type password", "type2");
+	inp2.description = "Strong password to use";
 	inp2.password_mask = "*";
 	@inp2.shortcut = nv_shortcut(KEY_E, true, false, false);
 	inp2.set_disallowed_chars("/'\\\" ", false, "Invalid character");
@@ -31,6 +32,8 @@ void main() {
 	nv_form_spin@ spin = nv_form_spin(f, "Milliseconds for a double press", "msdp");
 	f.add_control(spin);
 	nv_form_checkbox@ rvd = f.add_checkbox("Reverb's dry field is enabled", "rvd", true);
+	@rvd.shortcut = nv_shortcut(KEY_R, alt = true);
+	rvd.description = "Toggle reverb configuration parameter";
 	nv_form_spin@ spin2 = nv_form_spin(f, "Reverb's dry value", "rvd");
 	spin2.step = 0.25;
 	spin2.min = 0.0;
@@ -50,6 +53,7 @@ void main() {
 	enable.set_pos(enable.get_item_index("1"));
 	@enable.shortcut = parse_nv_shortcut("Alt+S");
 	nv_form_button@ btne = f.add_button("Subscribe", "sub");
+	btne.description = "Subscribe to the channel";
 	@btne.shortcut = nv_shortcut(KEY_S, alt = true, tap = 2);
 	//now we create a basic button with a callback registered to it.
 	nv_form_button@btn = f.add_button("Press this other button here", "testbtn", cancel = true, callback = on_x_click);
@@ -64,6 +68,7 @@ void main() {
 	f.add_control(lst);
 	nv_form_list_box@ mlst = f.add_list("Files (multiselect)", "mls", multiselect = true);
 	mlst.add_items({"document.txt", "readme.md", "program.exe", "python.py", "test.c", "test.h"});
+	mlst.description = "Files to upload";
 	@mlst.shortcut = nv_shortcut(KEY_F, alt = true);
 	nv_form_list_box@lst_c = nv_form_list_box(f, "Custom test items", "items2");
 	lst_c.custom_type = "Combo box";
@@ -71,6 +76,7 @@ void main() {
 	f.add_control(lst_c);
 	nv_form_slider@slider = f.add_slider("volume level", "vol", max_value = 100, page_size = 5);
 	nv_form_keyboard_area@ kbd = f.add_keyboard_area("have fun here", "kbd");
+	kbd.description = "UI lives here";
 	@kbd.shortcut = nv_shortcut(KEY_G, alt = true);
 	nv_form_progress_bar@progress = nv_form_progress_bar(f, "downloading file", "progress");
 	progress.speak_progress_updates = false;
