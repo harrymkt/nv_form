@@ -32,3 +32,7 @@ shared enum nv_form_text_edit_mode_constants {
 	NV_FORM_EDIT_MODE_TRIM_TO_LENGTH,
 	NV_FORM_EDIT_MODE_APPEND_TO_END
 }
+enum nv_util_flag {
+	NV_UTIL_GO_INDEX = 1 << 0,
+	NV_UTIL_SEARCH = 1 << 1
+}

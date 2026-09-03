@@ -27,13 +27,13 @@ bool handle_nv_utils(nv_form_control@ ctrl) {
 	if (supported_types.find(ctrl.type) < 0) return false;
 	nv_form_input@ inp = cast < nv_form_input@ > (ctrl);
 	if (@inp != null && inp.password_mask != "") return false;
-	if (keyboard_modifiers & KEYMOD_CTRL != 0 && key_pressed(KEY_G) && ctrl.enable_go_line) {
+	if ((keyboard_modifiers & KEYMOD_CTRL) != 0 && key_pressed(KEY_G) && (ctrl.util_flags & NV_UTIL_GO_INDEX) != 0) {
 		nv_go_to_index(ctrl.parent, ctrl);
 		return true;
-	} else if (keyboard_modifiers & KEYMOD_CTRL != 0 && key_pressed(KEY_F) && ctrl.enable_search) {
+	} else if ((keyboard_modifiers & KEYMOD_CTRL) != 0 && key_pressed(KEY_F) && (ctrl.util_flags & NV_UTIL_SEARCH) != 0) {
 		nv_search_for(ctrl.parent, ctrl);
 		return true;
-	} else if (key_repeating(KEY_F3)) {
+	} else if (key_repeating(KEY_F3) && (ctrl.util_flags & NV_UTIL_SEARCH) != 0) {
 		string last_search = "";
 		if (ctrl.parent.nv_utility_form_data.get("last_search", last_search))
 			ctrl.parent.search(ctrl, last_search, keyboard_modifiers & KEYMOD_SHIFT == 0 ? 1 : -1, false);
@@ -74,8 +74,7 @@ class nv_go_to_index : nv_utility_form {
 		@f_index = nv_form_input(f, lnmsg, "ln");
 		f_index.default_text = current;
 		f_index.select(0);
-		f_index.enable_go_line = false;
-		f_index.enable_search = false;
+		f_index.util_flags &= ~(NV_UTIL_GO_INDEX | NV_UTIL_SEARCH);
 		f_index.set_disallowed_chars("0123456789", true);
 		f.add_control(f_index);
 		nv_form_control@ index_to_focus = f_index;
@@ -83,8 +82,7 @@ class nv_go_to_index : nv_utility_form {
 			@f_col = nv_form_input(f, "Line column", "lc");
 			f_col.default_text = ctrl_input.get_line_column();
 			f_col.select(0);
-			f_col.enable_go_line = false;
-			f_col.enable_search = false;
+			f_col.util_flags &= ~(NV_UTIL_GO_INDEX | NV_UTIL_SEARCH);
 			f_col.set_disallowed_chars("0123456789", true);
 			f.add_control(f_col);
 			if (!ctrl_input.multiline) {
@@ -181,8 +179,7 @@ class nv_search_for : nv_utility_form {
 		f.create_window(wmsg, false, true);
 		@f_text = f.add_input(lnmsg, "ln", current, "", 256);
 		f_text.select(0);
-		f_text.enable_go_line = false;
-		f_text.enable_search = false;
+		f_text.util_flags &= ~(NV_UTIL_GO_INDEX | NV_UTIL_SEARCH);
 		@f_next = f.add_button("find next", "next", true);
 		@f_next.shortcut = nv_shortcut(KEY_N, alt = true);
 		@f_prev = f.add_button("find previous", "prev");
