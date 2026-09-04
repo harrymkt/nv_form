@@ -8,7 +8,7 @@ abstract class nv_form_control {
 	nv_form@parent;
 	bool speak_shortcut = true, autoactivate = false;
 	bool hidden = false, enabled = true;
-	int util_flags = NV_UTIL_GO_INDEX | NV_UTIL_SEARCH;
+	uint util_flags = NV_UTIL_GO_INDEX | NV_UTIL_SEARCH;
 	nv_form_control_callback@callback = null;
 	nv_form_event_dispatcher event;
 	nv_form_context_menu@ context_menu = null;
