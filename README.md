@@ -35,3 +35,4 @@ NV Form module advertises the following features:
 - Events: Make your projects more integrated by using [events](docs/Classes/nv_form_event) dispatched by the form's [event dispatcher](docs/Classes/nv_form_event_dispatcher) without having to modify controls, i.e. [adding keyboard / navigation sounds](test/input_event.nvgt).
 - Extensive Shortcuts: Utilize advanced shortcut combinations, key modifiers, multitap keys, all from just one [shortcut manager](docs/Classes/nv_shortcut_manager).
 - Organized Forms: Make your project more clean and categorized by utilizing [tab controls](test/tab.nvgt), known as child forms.
+- Touch and Keyboard: Cross-platform support for touch and keyboard, allowing your projects to use UI controls even on mobile devices.

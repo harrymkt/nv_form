@@ -97,7 +97,7 @@ class nv_form {
 		get_characters();
 		@touch = touch_gesture_manager();
 		dictionary touches;
-		int[] prevkey = {KEY_TAB, KEY_LCTRL};
+		int[] prevkey = {KEY_TAB, KEY_LSHIFT};
 		touches.set("swipe_left1f", prevkey);
 		touches.set("swipe_right1f", KEY_TAB);
 		touches.set("double_tap1f", KEY_RETURN);
