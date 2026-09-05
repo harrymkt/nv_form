@@ -15,6 +15,7 @@ abstract class nv_form_control {
 	nv_form_event_dispatcher event;
 	nv_form_context_menu@ menu = null;
 	nv_form_suggestion_manager@ suggestion = null;
+	touch_gesture_manager@ touch = null;
 	nv_form_control(const string &in caption, const string &in id, int type, nv_form@parent) {
 		this.caption = caption;
 		this.type = type;

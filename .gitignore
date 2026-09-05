@@ -2,6 +2,8 @@
 pre/**
 !pre/README.md
 *.zip
+*.apk
+*.apk.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

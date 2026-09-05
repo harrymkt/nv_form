@@ -8,6 +8,7 @@
 #include "shortcut.nvgt"
 #include "speech.nvgt"
 #include "utilities.nvgt"
+#include "touch.nvgt"
 
 string nvform_word_separators = "_ .,!\\\"/[{()}]=\n:|";
 int nvform_keyboard_echo = TEXTFLAG_ENTRY_CHARACTERS;
@@ -27,6 +28,7 @@ class nv_form {
 	nv_form_callback@background_callback = null;
 	nv_shortcut_manager@ shortcut;
 	nv_form_event_handler@ default_event_handler = null;
+	protected touch_gesture_manager@ touch;
 	nv_form() {
 		reset();
 	}
@@ -93,6 +95,14 @@ class nv_form {
 		else if (title.empty()) return false;
 		window_title = title;
 		get_characters();
+		@touch = touch_gesture_manager();
+		dictionary touches;
+		int[] prevkey = {KEY_TAB, KEY_LCTRL};
+		touches.set("swipe_left1f", prevkey);
+		touches.set("swipe_right1f", KEY_TAB);
+		touches.set("double_tap1f", KEY_RETURN);
+		touch_keyboard_interface tki(touch, touches);
+		touch.add_touch_interface(tki);
 		active = true;
 		@shortcut = nv_shortcut_manager();
 		shortcut.tap_timeout = tap_timeout;
@@ -151,6 +161,7 @@ class nv_form {
 				}
 			}
 			handled = ctrl.handle_input();
+			if (@touch != null) touch.monitor();
 			if ((keyboard_modifiers & KEYMOD_SHIFT != 0 && key_pressed(KEY_F10)) || key_pressed(KEY_MENU) || key_pressed(KEY_APPLICATION)) {
 				if (@ctrl.menu != null) {
 					ctrl.menu.show();
@@ -166,7 +177,7 @@ class nv_form {
 				bool next_control = true;
 				if ((keyboard_modifiers & KEYMOD_SHIFT) != 0) next_control = false;
 				navigate_form(next_control);
-			} else if (@cancel_control != null && key_pressed(KEY_ESCAPE)) {
+			} else if (@cancel_control != null && (key_pressed(KEY_ESCAPE) || key_pressed(KEY_AC_BACK))) {
 				nv_form_tab_control@ tab = cast<nv_form_tab_control@>(ctrl);
 				if (@tab == null || !tab.is_waiting_form) {
 					cancel_control.fire();
