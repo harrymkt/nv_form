@@ -1,0 +1,21 @@
+#pragma include ".."
+#include "form/form.nvgt"
+
+void main() {
+	nv_form f;
+	f.create_window("Slider Value Test");
+	nv_form_slider@ a = f.add_slider("Bandwidth Limit", "slide", 0, 512, 8, 0, 32);
+	for (uint i = 0; i <= 512; i+= 8) {
+		string m = "Unlimited";
+		if (i == 512) m = "Maximum";
+		else if (i == 512 / 2) m = "Optimum";
+		else if (i != 0) m = i + " MB";
+		a.set_text(i, m);
+	}
+	nv_form_button@ b = f.add_button("Close", "close", false, true);
+	f.controls[0].focus(false, false); // Not quiet, not interrupt.
+	while (f.monitor()) {
+		wait(5);
+	}
+	alert("Information", "You selected " + a.value + ", which is " + a.text_value);
+}

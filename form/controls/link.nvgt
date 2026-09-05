@@ -5,6 +5,9 @@ class nv_form_link: nv_form_control {
 		super(caption, id, NV_FORM_CT_LINK, @parent);
 		this.pressed = pressed;
 		this.url = url;
+		@touch = touch_gesture_manager();
+		dictionary touches = {{"double_tap1f", KEY_RETURN}};
+		touch.add_touch_interface(touch_keyboard_interface(touch, touches));
 	}
 	bool monitor() { return pressed; }
 	void fire() {
@@ -13,6 +16,7 @@ class nv_form_link: nv_form_control {
 		nv_form_control::fire();
 	}
 	bool handle_input() {
+		if (@touch != null) touch.monitor();
 		if (key_pressed(KEY_SPACE) || key_pressed(KEY_RETURN) || key_pressed(KEY_NUMPAD_ENTER)) {
 			fire();
 			return true;

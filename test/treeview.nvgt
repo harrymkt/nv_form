@@ -1,0 +1,27 @@
+#pragma include ".."
+#include "form/form.nvgt"
+void main() {
+	nv_form f;
+	f.create_window("Treeview Test");
+	nv_form_treeview@ a = nv_form_treeview(f, "Directories", "dir");
+	@a.shortcut = nv_shortcut(KEY_D, alt = true);
+	nv_form_tree_node@ b = a.add("C:", "C:");
+	string[] list = {"Program files", "Program files (x86)", "Users", "Windows"};
+	for (uint i = 0; i < list.length(); i++) b.add(list[i], list[i]);
+	nv_form_tree_node@ c = a.add("D:", "D:");
+	list = {"Audio", "Documents", "Downloads", "Music"};
+	for (uint i = 0; i < list.length(); i++) c.add(list[i], list[i]);
+	nv_form_tree_node@ cc = c.add("Tools", "tools");
+	cc.add("Android", "android");
+	cc.add("PC", "PC");
+	list = {"Home", "Desktop", "Network"};
+	for (uint i = 0; i < list.length(); i++) a.add(list[i], list[i]);
+	f.add_control(a);
+	nv_form_button@ can = f.add_button("Close", "close", false, true);
+	while (f.monitor()) {
+		wait(5);
+	}
+	if (@a.focused_node == null) alert("Information", "You did not select any directory");
+	//else alert("The selected directory is", (@a.focused_node.parent != null ? a.focused_node.parent.id + "/" : "") + a.focused_node_id);
+	else alert("The selected directory is", a.focused_node.full_id("/"));
+}

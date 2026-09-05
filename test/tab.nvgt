@@ -1,0 +1,30 @@
+#pragma include ".."
+#include "form/form.nvgt"
+void main() {
+	nv_form f;
+	f.create_window("Test", say_dialog = true);
+	wait(250);
+	nv_form_tab_control tc(f, "categories");
+	nv_form_tab_page@ jeneral = tc.add_tab_page("jeneral");
+	nv_form_tab_page@ connection = tc.add_tab_page("connection");
+	nv_form_input@ nck = jeneral.add_input("nickname", "nck");
+	@nck.shortcut = parse_nv_shortcut("Alt+N");
+	nv_form_checkbox@ ck = jeneral.add_checkbox("ask on exit");
+	@ck.shortcut = parse_nv_shortcut("Alt+A");
+	nv_form_checkbox@ ctc = connection.add_checkbox("reconnect on connection drop", "ctc");
+	@ctc.shortcut = parse_nv_shortcut("Alt+R");
+	nv_form_spin@ ctm = connection.add_spin("connection timeout", "ctm");
+	@ctm.shortcut = parse_nv_shortcut("Alt+T");
+	tc.add_tab_page("sound system");
+	f.add_control(tc);
+	nv_form_button@ ok = f.add_button("Ok", "ok", true);
+	f.add_button("cancel", cancel = true);
+	while (true) {
+		if (!f.monitor()) {
+			alert("ok", "time to exit this application");
+			break;
+		}
+		if (f.is_pressed(ok)) speak("OK is pressed");
+		wait(5);
+	}
+}

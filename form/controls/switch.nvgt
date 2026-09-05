@@ -4,6 +4,9 @@ class nv_form_switch: nv_form_control {
 	nv_form_switch(nv_form@parent, const string &in caption, const string &in id = "", nv_form_switch_item@[] items = {}) {
 		super(caption, id, NV_FORM_CT_SWITCH, @parent);
 		if (items.length() > 0) this.items.extend(items);
+		@touch = touch_gesture_manager();
+		dictionary touches = {{"double_tap1f", KEY_SPACE}};
+		touch.add_touch_interface(touch_keyboard_interface(touch, touches));
 	}
 	nv_form_switch_item@get_focused_item() const property {
 		if (items.length() <= 0 || index < 0 || index >= int(items.length())) return null;
@@ -32,6 +35,7 @@ class nv_form_switch: nv_form_control {
 		return true;
 	}
 	bool handle_input() {
+		if (@touch != null) touch.monitor();
 		if (key_repeating(KEY_SPACE)) {
 			bool nav = next;
 			if (nav) speak(focused_item.text);

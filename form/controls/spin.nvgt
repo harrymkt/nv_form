@@ -10,6 +10,16 @@ class nv_form_spin: nv_form_input {
 		set_chars();
 		if (this.page <= 0) this.page = this.step * 10;
 		default_text = min;
+		@touch = touch_gesture_manager();
+		int[] ctrlhome = {KEY_LCTRL, KEY_HOME};
+		int[] ctrlend = {KEY_LCTRL, KEY_END};
+		dictionary touches = {
+			{"swipe_up1f", KEY_UP},
+			{"swipe_down1f", KEY_DOWN},
+			{"swipe_up2f", ctrlhome},
+			{"swipe_down2f", ctrlend}
+		};
+		touch.add_touch_interface(touch_keyboard_interface(touch, touches));
 	}
 	void set_chars() {
 		string chars = "0123456789";
@@ -36,6 +46,7 @@ class nv_form_spin: nv_form_input {
 		}
 	}
 	bool handle_input() {
+		if (@touch != null) touch.monitor();
 		if (!read_only) {
 			if (key_repeating(KEY_UP)) {
 				double t = parse_double(text) + this.step;

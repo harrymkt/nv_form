@@ -54,6 +54,17 @@ class nv_form_treeview : nv_form_control {
 	int page_size = 10;
 	nv_form_treeview(nv_form@ parent, const string &in caption, const string &in id = "") {
 		super(caption, id, NV_FORM_CT_TREEVIEW, @parent);
+		@touch = touch_gesture_manager();
+		dictionary touches = {
+			{"double_tap1f", KEY_SPACE},
+			{"swipe_up1f", KEY_UP},
+			{"swipe_down1f", KEY_DOWN},
+			{"swipe_up2f", KEY_HOME},
+			{"swipe_down2f", KEY_END},
+			{"swipe_left2f", KEY_LEFT},
+			{"swipe_right2f", KEY_RIGHT}
+		};
+		touch.add_touch_interface(touch_keyboard_interface(touch, touches));
 	}
 	int get_item_index(const string &in id) const {
 		if (nodes.length() < 1) return -1;
@@ -164,6 +175,7 @@ class nv_form_treeview : nv_form_control {
 	}
 	bool handle_input() {
 		if (visible_nodes.length() == 0) return false;
+		if (@touch != null) touch.monitor();
 		if (multinav) {
 			if (multinavtime.elapsed > 1000 and multichar != "")
 				multichar = "";

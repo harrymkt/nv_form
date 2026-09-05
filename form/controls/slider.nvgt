@@ -11,6 +11,14 @@ class nv_form_slider: nv_form_control {
 		if (this.page <= 0) this.page = this.step * 10;
 		clamp_value();
 		if (@text != null) this.text = text;
+		@touch = touch_gesture_manager();
+		dictionary touches = {
+			{"swipe_up1f", KEY_UP},
+			{"swipe_down1f", KEY_DOWN},
+			{"swipe_up2f", KEY_HOME},
+			{"swipe_down2f", KEY_END}
+		};
+		touch.add_touch_interface(touch_keyboard_interface(touch, touches));
 	}
 	void clamp_value() {
 		value = clamp(value, min_value, max_value);
@@ -38,6 +46,7 @@ class nv_form_slider: nv_form_control {
 		return get_text(value, value);
 	}
 	bool handle_input() {
+		if (@touch != null) touch.monitor();
 		if (key_repeating(KEY_DOWN)) {
 			set_value(value - step);
 			speak(text_value);
