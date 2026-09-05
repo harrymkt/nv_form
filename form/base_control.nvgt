@@ -4,15 +4,17 @@ abstract class nv_form_control {
 	string caption;
 	string id;
 	string description;
+	string help;
 	protected nv_shortcut@ __shortcut = null;
 	nv_form@parent;
 	bool speak_shortcut = true, autoactivate = false;
 	bool hidden = false, enabled = true;
 	uint util_flags = NV_UTIL_GO_INDEX | NV_UTIL_SEARCH;
-	nv_form_control_callback@callback = null;
+	nv_form_control_callback@ callback = null;
+	nv_form_control_callback@ help_callback = null;
 	nv_form_event_dispatcher event;
-	nv_form_context_menu@ context_menu = null;
-	nv_form_suggestion_manager@ suggestion_manager = null;
+	nv_form_context_menu@ menu = null;
+	nv_form_suggestion_manager@ suggestion = null;
 	nv_form_control(const string &in caption, const string &in id, int type, nv_form@parent) {
 		this.caption = caption;
 		this.type = type;
@@ -53,20 +55,27 @@ abstract class nv_form_control {
 	}
 	bool handle_input() { return false; }
 	bool monitor() { return false;}
-	void fire() {
-		if (!enabled) return;
+	bool send_callback() {
 		bool ok = true;
 		if (@callback != null) ok = callback(this);
+		return ok;
+	}
+	void fire() {
+		if (!enabled) return;
+		bool ok = send_callback();
 		if (!ok) return;
-		string i = get_control_info();
-		if (i.empty()) i = fixed_type_first;
-		if (i.empty()) i = fixed_type_last;
-		if (!i.empty()) speak(i);
 		on_fire();
 	}
 	void on_fire() { }
 	void on_focus_gained_immediate() { }
 	void on_focus_gained() { }
+	void show_help() {
+		bool ok = false;
+		if (@help_callback != null) ok = help_callback(this);
+		if (ok) return;
+		if (help == "") return;
+		speak(help);
+	}
 	string[] get_control_info_array() property {
 		string[] f;
 		if (description != "") f.insert_last(description);

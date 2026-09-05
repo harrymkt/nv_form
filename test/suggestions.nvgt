@@ -4,8 +4,8 @@ void main() {
 	nv_form f;
 	f.create_window("Auto-complete Test", say_dialog = true);
 	nv_form_input@ inp = f.add_input("Country", "country");
-	@inp.suggestion_manager = nv_form_suggestion_manager(f, inp, true);
-	inp.suggestion_manager.add_suggestions({"Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Brazil", "Bulgaria", "Canada", "Chile", "China", "Colombia"});
+	@inp.suggestion = nv_form_suggestion_manager(f, inp, true);
+	inp.suggestion.add_suggestions({"Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Brazil", "Bulgaria", "Canada", "Chile", "China", "Colombia"});
 	nv_form_button@ close_btn = f.add_button("Close", "close", cancel = true);
 	@close_btn.shortcut = nv_shortcut(KEY_C, alt = true);
 	wait(250);

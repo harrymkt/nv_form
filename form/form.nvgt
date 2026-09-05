@@ -152,10 +152,13 @@ class nv_form {
 			}
 			handled = ctrl.handle_input();
 			if ((keyboard_modifiers & KEYMOD_SHIFT != 0 && key_pressed(KEY_F10)) || key_pressed(KEY_MENU) || key_pressed(KEY_APPLICATION)) {
-				if (@ctrl.context_menu != null) {
-					ctrl.context_menu.show();
+				if (@ctrl.menu != null) {
+					ctrl.menu.show();
 					return true;
 				}
+			} else if (key_pressed(KEY_F1)) {
+				ctrl.show_help();
+				return true;
 			}
 		}
 		if (!handled) {

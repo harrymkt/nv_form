@@ -245,7 +245,7 @@ class nv_form_input: nv_form_control {
 		e.character = character;
 		event.fire(e);
 		if (!silent && prevselect) speak(highlight_unselect_speech_text, false);
-		if (@suggestion_manager != null) suggestion_manager.update();
+		if (@suggestion != null) suggestion.update();
 		return true;
 	}
 	bool edit(const string &in character) {
@@ -262,7 +262,7 @@ class nv_form_input: nv_form_control {
 		}
 		if (echo_flag == TEXTFLAG_ENTRY_CHARACTERS || echo_flag == TEXTFLAG_ENTRY_CHARACTERS_WORDS)
 			speak(input_box_speak(find_appropriate_character(character)), true);
-		if (@suggestion_manager != null) suggestion_manager.update();
+		if (@suggestion != null) suggestion.update();
 		if (nvform_word_separators .find(character) > -1 && (echo_flag == TEXTFLAG_ENTRY_WORDS || echo_flag == TEXTFLAG_ENTRY_CHARACTERS_WORDS)) {
 			int temp_position = cursor - 1;
 			while (temp_position > 0 && (temp_position >= text.length() || nvform_word_separators .find(text[temp_position - 1]) < 0))
@@ -824,7 +824,7 @@ class nv_form_input: nv_form_control {
 		nv_form_input_event e(this);
 		e.character = paste;
 		event.fire(e);
-		if (@suggestion_manager != null) suggestion_manager.update();
+		if (@suggestion != null) suggestion.update();
 	}
 	void delete_word_left() {
 		move_word_left(true, false);
@@ -853,7 +853,7 @@ class nv_form_input: nv_form_control {
 			nv_form_input_event e(this);
 			e.deleted = true;
 			event.fire(e);
-			if (@suggestion_manager != null) suggestion_manager.update();
+			if (@suggestion != null) suggestion.update();
 			return;
 		} else if (from_start == 0 && cursor > 0) {
 			int old_cursor = cursor;
@@ -868,7 +868,7 @@ class nv_form_input: nv_form_control {
 			e.character = deltext;
 			e.deleted = true;
 			event.fire(e);
-			if (@suggestion_manager != null) suggestion_manager.update();
+			if (@suggestion != null) suggestion.update();
 		} else if (from_start == 1 && cursor < text.length()) {
 			string del_char = text.substr(cursor, 4);
 			text = text.substr(0, cursor) + text.substr(cursor + utf8size(del_char));
@@ -878,7 +878,7 @@ class nv_form_input: nv_form_control {
 			e.character = del_char;
 			e.deleted = true;
 			event.fire(e);
-			if (@suggestion_manager != null) suggestion_manager.update();
+			if (@suggestion != null) suggestion.update();
 		}
 	}
 	bool select(int sel_start = -1, int sel_end = -1) {

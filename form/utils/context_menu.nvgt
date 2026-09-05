@@ -14,7 +14,7 @@ class nv_form_context_menu : nv_utility_form {
 	string title;
 	bool change_screen_title, say_dialog;
 	nv_form_context_menu_callback@ default_callback;
-	nv_form_context_menu(nv_form@ parent, nv_form_control@ ctrl, const string &in title = "Context Menu", bool change_screen_title = false, bool say_dialog = true, nv_form_context_menu_callback@ callback = null) {
+	nv_form_context_menu(nv_form@ parent, nv_form_control@ ctrl, const string &in title = "Context Menu", bool change_screen_title = false, bool say_dialog = false, nv_form_context_menu_callback@ callback = null) {
 		@this.parent = @parent;
 		@this.ctrl = @ctrl;
 		this.title = title;
@@ -47,7 +47,7 @@ class nv_form_context_menu : nv_utility_form {
 		@cancel_btn.shortcut = nv_shortcut(KEY_C, alt = true);
 		cancel_btn.hidden = true;
 		@f.background_callback = parent.background_callback;
-		f.focus_control(list, false, false);
+		f.focus_control(list, true, false);
 		@parent.nv_utility_form = this;
 	}
 	void monitor() {

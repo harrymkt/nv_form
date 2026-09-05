@@ -27,7 +27,8 @@ void main() {
 	@inp2.shortcut = nv_shortcut(KEY_E, true, false, false);
 	inp2.set_disallowed_chars("/'\\\" ", false, "Invalid character");
 	f.add_control(inp2);
-	nv_form_input@ inp3 = f.add_input("Type 8 numbers", "8num", "", "", 8);
+	nv_form_input@ inp3 = f.add_input("Type 8 numbers (F1 for help)", "8num", "", "", 8);
+	inp3.help = "Only numbers, 0-9, are accepted. Other inputs will be ignored.";
 	inp3.set_disallowed_chars("0123456789", true, "Numbers only");
 	nv_form_spin@ spin = nv_form_spin(f, "Milliseconds for a double press", "msdp");
 	f.add_control(spin);

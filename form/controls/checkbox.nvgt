@@ -5,8 +5,10 @@ class nv_form_checkbox: nv_form_control {
 		this.state = initial_state;
 	}
 	void fire() {
+		if (!enabled) return;
 		toggle();
-		nv_form_control::fire();
+		if (!send_callback()) return;
+		speak(fixed_type_last);
 	}
 	string get_fixed_type_last() property {
 		return (state ? "checked" : "not checked");
