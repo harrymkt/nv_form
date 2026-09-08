@@ -6,7 +6,7 @@ class nv_form_link: nv_form_control {
 		this.pressed = pressed;
 		this.url = url;
 		@touch = touch_gesture_manager();
-		dictionary touches = {{"double_tap1f", KEY_RETURN}};
+		dictionary touches = {{"double_tap1f", KEY_SPACE}};
 		touch.add_touch_interface(touch_keyboard_interface(touch, touches));
 	}
 	bool monitor() { return pressed; }

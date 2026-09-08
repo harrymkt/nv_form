@@ -20,6 +20,12 @@ class nv_form_input: nv_form_control {
 	nv_form_input(nv_form@parent, const string &in caption, const string &in id = "") {
 		super(caption, id, NV_FORM_CT_INPUT, @parent);
 		echo_flag = this.parent.keyboard_echo;
+		@touch = touch_gesture_manager();
+		dictionary touches = {
+			{"swipe_up1f", KEY_UP},
+			{"swipe_down1f", KEY_DOWN}
+		};
+		touch.add_touch_interface(touch_keyboard_interface(touch, touches));
 	}
 	string get_control_info() {
 		string f;
@@ -57,8 +63,8 @@ class nv_form_input: nv_form_control {
 	}
 	bool handle_input() {
 		if (@parent.current_control != @this) return false;
-		string char;
-		char = get_characters();
+		if (@touch != null) touch.monitor();
+		string char = get_characters();
 		if (!read_only) {
 			if (char != "") {
 				if (disallowed_chars.length() > 0 && is_disallowed_char(char)) {

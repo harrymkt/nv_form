@@ -143,6 +143,7 @@ class nv_form {
 		nv_form_control@ ctrl = current_control;
 		nv_form_control@ pctrl = primary_control;
 		bool handled = false;
+		if (@touch != null) touch.monitor();
 		if (@ctrl != null) {
 			if (@nv_utility_form != null) {
 				nv_form_suggestion_manager@ sug = cast<nv_form_suggestion_manager@>(nv_utility_form);
@@ -161,7 +162,6 @@ class nv_form {
 				}
 			}
 			handled = ctrl.handle_input();
-			if (@touch != null) touch.monitor();
 			if ((keyboard_modifiers & KEYMOD_SHIFT != 0 && key_pressed(KEY_F10)) || key_pressed(KEY_MENU) || key_pressed(KEY_APPLICATION)) {
 				if (@ctrl.menu != null) {
 					ctrl.menu.show();

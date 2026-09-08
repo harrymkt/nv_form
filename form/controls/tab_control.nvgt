@@ -1,15 +1,16 @@
 class nv_form_tab_control: nv_form_control {
 	nv_form_tab_page@[] tab_pages;
-	bool speak_position;
+	bool speak_position, speak_selected;
 	int max_pages = -1;
 	int position = -1;
 	bool multinav = true;
 	timer multinavtime;
 	string multichar;
 	int page_size = 10;
-	nv_form_tab_control(nv_form@parent, const string &in caption, const string &in id = "", nv_form_tab_page@[] pages = {}, int max_pages = -1, bool speak_position = false) {
+	nv_form_tab_control(nv_form@parent, const string &in caption, const string &in id = "", nv_form_tab_page@[] pages = {}, int max_pages = -1, bool speak_position = false, bool speak_selected = false) {
 		super(caption, id, NV_FORM_CT_TAB_CONTROL, @parent);
 		this.speak_position = speak_position;
+		this.speak_selected = speak_selected;
 		this.max_pages = max_pages;
 		if (pages.length() > 0) this.tab_pages.extend(pages);
 		@touch = touch_gesture_manager();
@@ -68,7 +69,8 @@ class nv_form_tab_control: nv_form_control {
 	string speak_tab_item(nv_form_tab_page@ value) {
 		if (@value == null) return "";
 		string[] f;
-		f.insert_last(value.name + " tab selected");
+		f.insert_last(value.name);
+		if (speak_selected) f.insert_last("tab selected");
 		if (speak_position) f.insert_last((position + 1) + " of " + tab_pages.length());
 		return join(f, "  ");
 	}
@@ -265,7 +267,7 @@ class nv_form_tab_control: nv_form_control {
 			if (tab_pages[position].control_index == -1)
 				return speak_tab_item(tab_pages[position]);
 			else
-				return tab_pages[position].name + "  property page  ";
+				return tab_pages[position].name + "  property page";
 		}
 		return "";
 	}
