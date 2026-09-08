@@ -432,9 +432,11 @@ class nv_form {
 		nv_form_input@ ctrl_input = cast < nv_form_input@ > (ctrl);
 		nv_form_list_box@ ctrl_list = cast < nv_form_list_box@ > (ctrl);
 		nv_form_treeview@ ctrl_tree = cast < nv_form_treeview@ > (ctrl);
+		nv_form_tab_control@ ctrl_tab = cast < nv_form_tab_control@ > (ctrl);
 		if (@ctrl_input != null) return ctrl_input.search(text, dir, silent);
 		else if (@ctrl_list != null) return ctrl_list.search(text, dir, silent);
 		else if (@ctrl_tree != null) return ctrl_tree.search(text, dir, silent);
+		else if (@ctrl_tab != null) return ctrl_tab.search(text, dir, silent);
 		return false;
 	}
 	nv_utility_form@ nv_utility_form = null;

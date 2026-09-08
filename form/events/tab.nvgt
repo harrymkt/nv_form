@@ -1,0 +1,7 @@
+class nv_form_tab_event: nv_form_event {
+	int old_pos = -1;
+	nv_form_tab_event(nv_form_tab_control@ ctrl) {
+		super(ctrl, NV_FORM_EVENT_TAB);
+		old_pos = ctrl.position;
+	}
+}

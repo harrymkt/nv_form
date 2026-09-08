@@ -1,147 +1,277 @@
 class nv_form_tab_control: nv_form_control {
-	private nv_form_tab_page@[] tab_pages(0);
-	private int tab_page_index = 0;
-	bool speak_position = false;
-	nv_form_tab_control(nv_form@parent, const string &in caption, const string &in id = "", bool speak_position = false) {
+	nv_form_tab_page@[] tab_pages;
+	bool speak_position;
+	int max_pages = -1;
+	int position = -1;
+	bool multinav = true;
+	timer multinavtime;
+	string multichar;
+	int page_size = 10;
+	nv_form_tab_control(nv_form@parent, const string &in caption, const string &in id = "", nv_form_tab_page@[] pages = {}, int max_pages = -1, bool speak_position = false) {
 		super(caption, id, NV_FORM_CT_TAB_CONTROL, @parent);
 		this.speak_position = speak_position;
+		this.max_pages = max_pages;
+		if (pages.length() > 0) this.tab_pages.extend(pages);
 		@touch = touch_gesture_manager();
 		dictionary touches = {
 			{"swipe_up1f", KEY_LEFT},
-			{"swipe_down1f", KEY_RIGHT}
+			{"swipe_down1f", KEY_RIGHT},
+			{"swipe_up2f", KEY_HOME},
+			{"swipe_down2f", KEY_END}
 		};
 		touch.add_touch_interface(touch_keyboard_interface(touch, touches));
 	}
+	nv_form_tab_page@ get_focused_item() const property {
+		if (tab_pages.length() <= 0 || position < 0 || position >= tab_pages.length()) return null;
+		return tab_pages[position];
+	}
 	void ready_index(bool shift_is_down) {
-		if (tab_page_index < 0 || tab_page_index >= tab_pages.length()) return;
-		if (shift_is_down && tab_pages[tab_page_index].controls_count > 0)
-			tab_pages[tab_page_index].control_index = tab_pages[tab_page_index].controls.length();
+		if (position < 0 || position >= tab_pages.length()) return;
+		if (shift_is_down && tab_pages[position].controls_count > 0)
+			tab_pages[position].control_index = tab_pages[position].controls.length();
 		else
-			tab_pages[tab_page_index].control_index = -1;
+			tab_pages[position].control_index = -1;
 	}
 	bool get_is_waiting_form() const property {
-		if (tab_page_index < 0 || tab_page_index >= tab_pages.length()) return false;
-		return @tab_pages[tab_page_index].nv_utility_form != null;
+		if (position < 0 || position >= tab_pages.length()) return false;
+		return @tab_pages[position].nv_utility_form != null;
 	}
-	bool set_pos(int index) {
-		if (tab_pages.length() == 0) return false;
-		if (index < 0) index = 0;
-		if (index >= tab_pages.length()) index = tab_pages.length() - 1;
-		tab_page_index = index;
+	bool navigate(bool next = true, int step = 1) {
+		if (tab_pages.length() <= 0) return false;
+		int index = position;
+		if (next) index += step;
+		else index -= step;
+		return set_pos(index, true, true);
+	}
+	bool set_pos(int index, bool autobound = true, bool fire_event = false) {
+		if (tab_pages.length() <= 0) return false;
+		if (autobound) {
+			if (index < 0) index = 0;
+			if (index >= tab_pages.length()) index = tab_pages.length() - 1;
+		}
+		if (index < 0 || index > tab_pages.length() - 1) return false;
+		int opos = position;
+		position = index;
+		if (fire_event) {
+			dictionary a;
+			a.set("old_pos", opos);
+			fire_item_change_event(a);
+		}
 		return true;
+	}
+	void fire_item_change_event(dictionary@ args) {
+		nv_form_tab_event l(this);
+		int oldpos;
+		if (args.get("old_pos", oldpos)) l.old_pos = oldpos;
+		event.fire(l);
 	}
 	string speak_tab_item(nv_form_tab_page@ value) {
 		if (@value == null) return "";
 		string[] f;
 		f.insert_last(value.name + " tab selected");
-		if (speak_position) f.insert_last((tab_page_index + 1) + " of " + tab_pages.length());
+		if (speak_position) f.insert_last((position + 1) + " of " + tab_pages.length());
 		return join(f, "  ");
+	}
+	int find_multinav_position(const string &in prefix) {
+		if (prefix == "" || tab_pages.length() <= 0) return -1;
+		string current_prefix;
+		if (position >= 0 && position < tab_pages.length())
+			current_prefix = tab_pages[position].name.lower().substr(0, prefix.length());
+		for (int i = position; i < tab_pages.length(); i++) {
+			if (i < 0 || i >= tab_pages.length()) continue;
+			if (i == position) continue;
+			if (tab_pages[i].name.lower().substr(0, prefix.length()) == prefix) {
+				if (current_prefix == prefix && prefix.length() > 1) return -1;
+				return i;
+			}
+		}
+		for (uint i = 0; i < tab_pages.length(); i++) {
+			if (tab_pages[i].name.lower().substr(0, prefix.length()) == prefix) {
+				if (current_prefix == prefix && prefix.length() > 1) return -1;
+				return i;
+			}
+		}
+		return -1;
 	}
 	bool handle_input() {
 		if (@parent == null || @parent.current_control != @this) return false;
 		if (@touch != null) touch.monitor();
-		if (tab_page_index > -1 && tab_page_index < tab_pages.length() && tab_pages[tab_page_index].control_index == -1) {
-			if ((key_repeating(KEY_RIGHT) || key_repeating(KEY_DOWN)) && tab_page_index < tab_pages.length() - 1) {
-				tab_pages[tab_page_index].control_index = -1;
-				tab_page_index += 1;
-				speak(speak_tab_item(tab_pages[tab_page_index]));
-				return true;
-			} else if ((key_repeating(KEY_LEFT) || key_repeating(KEY_UP)) && tab_page_index > 0) {
-				tab_pages[tab_page_index].control_index = -1;
-				tab_page_index -= 1;
-				speak(speak_tab_item(tab_pages[tab_page_index]));
-				return true;
-			} else if (key_repeating(KEY_HOME) && tab_pages.length() > 0) {
-				tab_pages[tab_page_index].control_index = -1;
-				set_pos(0);
-				speak(speak_tab_item(tab_pages[tab_page_index]));
-				return true;
-			} else if (key_repeating(KEY_END) && tab_pages.length() > 0) {
-				tab_pages[tab_page_index].control_index = -1;
-				set_pos(tab_pages.length() - 1);
-				speak(speak_tab_item(tab_pages[tab_page_index]));
-				return true;
-			}
-		}
 		if (key_down(KEY_LCTRL) || key_down(KEY_RCTRL)) {
-			if (tab_page_index > -1 && tab_page_index < tab_pages.length()) {
+			if (position > -1 && position < tab_pages.length()) {
 				if (key_repeating(KEY_TAB)) {
-					bool next = true;
-					if (key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT))
-						next = false;
-					bool first_control = tab_pages[tab_page_index].control_index > -1;
-					tab_pages[tab_page_index].control_index = -1;
-					tab_page_index += (next ? 1 : -1);
-					if (tab_page_index >= tab_pages.length())
-						tab_page_index = 0;
-					else if (tab_page_index < 0)
-						tab_page_index = tab_pages.length() - 1;
-					tab_pages[tab_page_index].control_index = -1;
-					if (first_control && tab_pages[tab_page_index].controls_count > 0) {
-						speak(tab_pages[tab_page_index].name + "  property page");
-						tab_pages[tab_page_index].navigate_form(interrupt_previous_speech = false);
-					} else
-						speak(speak_tab_item(tab_pages[tab_page_index]));
+					bool next = !(key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT));
+					bool was_inside_page = tab_pages[position].control_index > -1;
+					tab_pages[position].control_index = -1;
+					position += (next ? 1 : -1);
+					if (position >= tab_pages.length())
+						position = 0;
+					else if (position < 0)
+						position = tab_pages.length() - 1;
+					tab_pages[position].control_index = -1;
+					if (was_inside_page && tab_pages[position].controls_count > 0) {
+						speak(tab_pages[position].name + "  property page");
+						tab_pages[position].navigate_form(interrupt_previous_speech = false);
+					} else {
+						speak(speak_tab_item(tab_pages[position]));
+					}
 					return true;
 				}
 			}
 		}
-		if (tab_page_index > -1 && tab_page_index < tab_pages.length()) {
+		if (position > -1 && position < tab_pages.length()) {
 			if (is_waiting_form) {
-				tab_pages[tab_page_index].nv_utility_form.monitor();
+				tab_pages[position].nv_utility_form.monitor();
 				return true;
 			}
-			if ((tab_pages[tab_page_index].is_last_control || tab_pages[tab_page_index].controls_count == 0) && key_up(KEY_LSHIFT) && key_up(KEY_RSHIFT) && key_repeating(KEY_TAB)) {
-				tab_pages[tab_page_index].control_index = -1;
-				parent.navigate_form();
-				return true;
-			} else if (tab_pages[tab_page_index].control_index > -1 && tab_pages[tab_page_index].is_first_control && (key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT)) && key_repeating(KEY_TAB)) {
-				tab_pages[tab_page_index].control_index = -1;
-				parent.speak_current_control();
-				return true;
-			} else if (tab_pages[tab_page_index].control_index == -1 && (key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT)) && key_repeating(KEY_TAB)) {
+			if (tab_pages[position].control_index > -1) {
+				if ((tab_pages[position].is_last_control || tab_pages[position].controls_count == 0) && key_up(KEY_LSHIFT) && key_up(KEY_RSHIFT) && key_repeating(KEY_TAB)) {
+					tab_pages[position].control_index = -1;
+					parent.navigate_form();
+					return true;
+				} else if (tab_pages[position].is_first_control && (key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT)) && key_repeating(KEY_TAB)) {
+					tab_pages[position].control_index = -1;
+					parent.speak_current_control();
+					return true;
+				}
+				return tab_pages[position].handle_input();
+			}
+			if ((key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT)) && key_repeating(KEY_TAB)) {
+				// Shift+Tab backward from tab header skips to previous parent control
 				parent.navigate_form(false);
 				return true;
-			} else if (tab_pages[tab_page_index].control_index == -1 && (key_up(KEY_LSHIFT) && key_up(KEY_RSHIFT)) && key_repeating(KEY_TAB)) {
-				speak(tab_pages[tab_page_index].name + "  property page");
-				tab_pages[tab_page_index].navigate_form(interrupt_previous_speech = false);
+			} else if (key_up(KEY_LSHIFT) && key_up(KEY_RSHIFT) && key_repeating(KEY_TAB)) {
+				// Tab forward from tab header
+				if (tab_pages[position].controls_count > 0) {
+					speak(tab_pages[position].name + "  property page");
+					tab_pages[position].navigate_form(interrupt_previous_speech = false);
+				} else {
+					// Skip directly to next form control if tab page is empty
+					parent.navigate_form();
+				}
 				return true;
 			}
-			return tab_pages[tab_page_index].handle_input();
 		}
+		if (multinav && position > -1 && position < tab_pages.length() && tab_pages[position].control_index == -1) {
+			if (multinavtime.elapsed > 1000 && multichar != "")
+				multichar = "";
+			string c = get_characters().lower();
+			if (c != "" && multichar != c) {
+				multinavtime.restart();
+				multichar += c;
+			}
+			if (multichar != "" && c != "") {
+				multichar = multichar.lower();
+				int pos = find_multinav_position(multichar);
+				if (pos >= 0 && set_pos(pos, true, true)) {
+					if (position >= 0 && position < tab_pages.length() && @tab_pages[position] != null) 
+						speak(speak_tab_item(tab_pages[position]));
+					return true;
+				}
+			}
+		}
+		if (key_repeating(KEY_LEFT) || key_repeating(KEY_UP)) {
+			bool nav = navigate(false);
+			if (nav && @focused_item != null) speak(speak_tab_item(focused_item));
+			return true;
+		}
+		if (key_repeating(KEY_RIGHT) || key_repeating(KEY_DOWN)) {
+			bool nav = navigate(true);
+			if (nav && @focused_item != null) speak(speak_tab_item(focused_item));
+			return true;
+		}
+		if (key_repeating(KEY_PAGEUP)) {
+			bool nav = navigate(false, page_size);
+			if (nav && @focused_item != null) speak(speak_tab_item(focused_item));
+			return true;
+		}
+		if (key_repeating(KEY_PAGEDOWN)) {
+			bool nav = navigate(true, page_size);
+			if (nav && @focused_item != null) speak(speak_tab_item(focused_item));
+			return true;
+		}
+		if (key_repeating(KEY_HOME)) {
+			bool nav = set_pos(0, true, true);
+			if (nav && @focused_item != null) speak(speak_tab_item(focused_item));
+			return true;
+		}
+		if (key_repeating(KEY_END)) {
+			bool nav = set_pos(tab_pages.length() - 1, true, true);
+			if (nav && @focused_item != null) speak(speak_tab_item(focused_item));
+			return true;
+		}
+		if (handle_nv_utils(this)) return true;
+		return false;
+	}
+	nv_form_tab_page@ add_tab_page(const string &in name) {
+		nv_form_tab_page i(name);
+		add_tab_page(i);
+		return i;
+	}
+	void add_tab_page(nv_form_tab_page@ tp) {
+		if (max_pages > 0 && tab_pages.length() >= max_pages) return;
+		tab_pages.insert_last(tp);
+		if (position < 0) position = 0;
+	}
+	bool search(const string &in text, int dir = 1, bool silent = false) {
+		if (tab_pages.length() < 1) return false;
+		string[] nav_items(this.tab_pages.length());
+		for (uint i = 0; i < this.tab_pages.length(); i++)
+			nav_items[i] = tab_pages[i].name;
+		bool already_on_result = false;
+		if (position > -1) already_on_result = nav_items[position].find(text) > -1;
+		string wrapped = "";
+		int pos = position;
+		if (pos < 0) pos = 0;
+		for (int i = pos + dir; i != pos; i += dir) {
+			if (i < 0) {
+				i = tab_pages.length() - 1;
+				wrapped = "wrapped to bottom";
+			} else if (i >= tab_pages.length()) {
+				i = 0;
+				wrapped = "wrapped to top";
+			}
+			if (i == pos) break;
+			if (nav_items[i].find(text) < 0) continue;
+			if (set_pos(i, false, true)) {
+				if (!silent) {
+					if (wrapped != "") speak(wrapped);
+					if (@focused_item != null) speak(speak_tab_item(focused_item), wrapped == "");
+				}
+				return true;
+			}
+		}
+		if (!silent)
+			speak(already_on_result ? "nothing else found" : "nothing found");
 		return false;
 	}
 	void on_focus_gained_immediate() {
 		ready_index(key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT));
 	}
 	void on_focus_gained() {
-		if (tab_page_index > -1 && tab_page_index < tab_pages.length()) {
-			if ((key_down(KEY_RSHIFT) || key_down(KEY_LSHIFT)) && tab_pages[tab_page_index].controls_count > 0) {
-				nv_form_control@ ctrl = tab_pages[tab_page_index].find_next_control(false);
-				tab_pages[tab_page_index].focus_control(ctrl, false, false);
+		start_text_input();
+		get_characters();
+		if (position > -1 && position < tab_pages.length()) {
+			if ((key_down(KEY_RSHIFT) || key_down(KEY_LSHIFT)) && tab_pages[position].controls_count > 0) {
+				nv_form_control@ ctrl = tab_pages[position].find_next_control(false);
+				tab_pages[position].focus_control(ctrl, false, false);
 			}
 		}
 	}
+	string get_fixed_type_last() property {
+		return join(control_info_array, "  ");
+	}
 	string get_control_info() {
-		if (tab_page_index > -1 && tab_page_index < tab_pages.length()) {
-			if (tab_pages[tab_page_index].control_index == -1)
-				return speak_tab_item(tab_pages[tab_page_index]);
+		if (position > -1 && position < tab_pages.length()) {
+			if (tab_pages[position].control_index == -1)
+				return speak_tab_item(tab_pages[position]);
 			else
-				return tab_pages[tab_page_index].name + "  property page  ";
+				return tab_pages[position].name + "  property page  ";
 		}
 		return "";
 	}
 	string get_str() property {
-		if (tab_page_index > -1 && tab_page_index < tab_pages.length() && tab_pages[tab_page_index].control_index != -1) return get_control_info();
-		else return nv_form_control::get_str();
-	}
-	nv_form_tab_page@ add_tab_page(const string &in caption) {
-		nv_form_tab_page tp(caption);
-		add_tab_page(tp);
-		return tp;
-	}
-	void add_tab_page(nv_form_tab_page@ tp) {
-		tab_pages.insert_last(tp);
+		if (position > -1 && position < tab_pages.length() && tab_pages[position].control_index != -1) return get_control_info();
+		return nv_form_control::get_str();
 	}
 }
 class nv_form_tab_page: nv_form {

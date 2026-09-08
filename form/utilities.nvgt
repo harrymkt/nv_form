@@ -23,7 +23,7 @@ interface nv_utility_form {
 }
 bool handle_nv_utils(nv_form_control@ ctrl) {
 	if (@ctrl == null) return false;
-	int[] supported_types = {NV_FORM_CT_LIST, NV_FORM_CT_INPUT, NV_FORM_CT_TREEVIEW};
+	int[] supported_types = {NV_FORM_CT_LIST, NV_FORM_CT_INPUT, NV_FORM_CT_TREEVIEW, NV_FORM_CT_TAB_CONTROL};
 	if (supported_types.find(ctrl.type) < 0) return false;
 	nv_form_input@ inp = cast < nv_form_input@ > (ctrl);
 	if (@inp != null && inp.password_mask != "") return false;
@@ -55,18 +55,23 @@ class nv_go_to_index : nv_utility_form {
 		nv_form_input@ ctrl_input = cast < nv_form_input@ > (ctrl);
 		nv_form_list_box@ ctrl_list = cast < nv_form_list_box@ > (ctrl);
 		nv_form_treeview@ ctrl_tree = cast < nv_form_treeview@ > (ctrl);
-		if (@ctrl_list == null && @ctrl_input == null && @ctrl_tree == null) return;
+		nv_form_tab_control@ ctrl_tab = cast < nv_form_tab_control@ > (ctrl);
+		if (@ctrl_list == null && @ctrl_input == null && @ctrl_tree == null && @ctrl_tab == null) return;
 		else if (
 			(@ctrl_input != null && ctrl_input.text == "") ||
 			(@ctrl_list != null && ctrl_list.items.length() < 1) ||
-			(@ctrl_tree != null && ctrl_tree.visible_nodes.length() < 1)
+			(@ctrl_tree != null && ctrl_tree.visible_nodes.length() < 1) ||
+			(@ctrl_tab != null && ctrl_tab.tab_pages.length() < 1)
 		) return;
 		int current = 1;
 		string wmsg = "Go to line";
 		string lnmsg = "Line number";
 		if (@ctrl_input != null) current = ctrl_input.get_line_number();
-		else if (@ctrl_list != null || @ctrl_tree != null) {
-			current = (@ctrl_list != null ? ctrl_list.list_position : ctrl_tree.pos) + 1;
+		else if (@ctrl_list != null || @ctrl_tree != null || @ctrl_tab != null) {
+			if (@ctrl_list != null) current = ctrl_list.list_position;
+			else if (@ctrl_tree != null) current = ctrl_tree.pos;
+			else if (@ctrl_tab != null) current = ctrl_tab.position;
+			current ++;
 			wmsg = "Go to index";
 			lnmsg = "Item number";
 		}
@@ -105,6 +110,7 @@ class nv_go_to_index : nv_utility_form {
 		nv_form_input@ ctrl_input = cast < nv_form_input@ > (ctrl);
 		nv_form_list_box@ ctrl_list = cast < nv_form_list_box@ > (ctrl);
 		nv_form_treeview@ ctrl_tree = cast < nv_form_treeview@ > (ctrl);
+		nv_form_tab_control@ ctrl_tab = cast < nv_form_tab_control@ > (ctrl);
 		if (f.is_pressed(f_cancel)) {
 			parent.focus_control(ctrl);
 			@parent.nv_utility_form = null;
@@ -127,6 +133,15 @@ class nv_go_to_index : nv_utility_form {
 				return;
 			} else if (@ctrl_tree != null) {
 				if (!ctrl_tree.set_pos(parse_int(idx) - 1, false)) {
+					speak("Invalid item number");
+					f.focus_control(f_index, false, false);
+					return;
+				}
+				@parent.nv_utility_form = null;
+				parent.focus_control(ctrl);
+				return;
+			} else if (@ctrl_tab != null) {
+				if (!ctrl_tab.set_pos(parse_int(idx) - 1, false)) {
 					speak("Invalid item number");
 					f.focus_control(f_index, false, false);
 					return;
@@ -164,17 +179,19 @@ class nv_search_for : nv_utility_form {
 		nv_form_input@ ctrl_input = cast < nv_form_input@ > (ctrl);
 		nv_form_list_box@ ctrl_list = cast < nv_form_list_box@ > (ctrl);
 		nv_form_treeview@ ctrl_tree = cast < nv_form_treeview@ > (ctrl);
-		if (@ctrl_list == null && @ctrl_input == null && @ctrl_tree == null) return;
+		nv_form_tab_control@ ctrl_tab = cast < nv_form_tab_control@ > (ctrl);
+		if (@ctrl_list == null && @ctrl_input == null && @ctrl_tree == null && @ctrl_tab == null) return;
 		else if (
 			(@ctrl_input != null && ctrl_input.text == "") ||
 			(@ctrl_list != null && ctrl_list.items.length() < 1) ||
-			(@ctrl_tree != null && ctrl_tree.visible_nodes.length() < 1)
+			(@ctrl_tree != null && ctrl_tree.visible_nodes.length() < 1) ||
+			(@ctrl_tab != null && ctrl_tab.tab_pages.length() < 1)
 		) return;
 		string current = "";
 		if (parent.nv_utility_form_data.exists("last_search")) parent.nv_utility_form_data.get("last_search", current);
 		string wmsg = "Search for Text";
 		string lnmsg = "Text to search";
-		if (@ctrl_list != null || @ctrl_tree != null)
+		if (@ctrl_list != null || @ctrl_tree != null || @ctrl_tab != null)
 			wmsg = "Search for Item";
 		f.create_window(wmsg, false, true);
 		@f_text = f.add_input(lnmsg, "ln", current, "", 256);
