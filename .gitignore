@@ -1,6 +1,9 @@
 # Pre directory is used to add private ones, for test purpose before push, so they would not contain in commits.
 pre/**
 !pre/README.md
+docbuild/**
+Web/HTML
+Web/content/doc.md"
 *.zip
 *.apk
 *.apk.*

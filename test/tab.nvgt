@@ -5,7 +5,7 @@ void main() {
 	f.create_window("Test", say_dialog = true);
 	wait(250);
 	nv_form_tab_control tc(f, "categories");
-	nv_form_tab_page@ jeneral = tc.add_tab_page("General");
+	nv_form_tab_page@ jeneral = tc.add_tab_page("General", "Manage general properties");
 	nv_form_tab_page@ connection = tc.add_tab_page("Connection");
 	nv_form_input@ nck = jeneral.add_input("nickname", "nck");
 	@nck.shortcut = parse_nv_shortcut("Alt+N");

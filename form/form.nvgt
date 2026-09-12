@@ -213,7 +213,7 @@ class nv_form {
 		}
 		return handled;
 	}
-	bool is_pressed(const string &in control_id) {
+	bool is_pressed(const string &in control_id) const {
 		nv_form_control@ctrl = get_control_by_id(control_id);
 		if (@ctrl == null || (ctrl.type != NV_FORM_CT_BUTTON && ctrl.type != NV_FORM_CT_LINK)) {
 			return false;
@@ -226,7 +226,7 @@ class nv_form {
 		else if (@link != null) return is_pressed(link);
 		return false;
 	}
-	bool is_pressed(nv_form_button@btn) {
+	bool is_pressed(nv_form_button@btn) const {
 		if (@btn.parent != this) {
 			return false;
 		}
@@ -234,7 +234,7 @@ class nv_form {
 		if (result) btn.pressed = false;
 		return result;
 	}
-	bool is_pressed(nv_form_link@link) {
+	bool is_pressed(nv_form_link@link) const {
 		if (@link.parent != this) {
 			return false;
 		}
@@ -242,41 +242,41 @@ class nv_form {
 		if (result) link.pressed = false;
 		return result;
 	}
-	bool is_checked(const string &in control_id) {
+	bool is_checked(const string &in control_id) const {
 		nv_form_checkbox@box = cast < nv_form_checkbox@ > (get_control_by_id(control_id));
 		if (@box == null) {
 			return false;
 		}
 		return is_checked(box);
 	}
-	bool is_checked(nv_form_checkbox@box) {
+	bool is_checked(nv_form_checkbox@box) const {
 		if (@box.parent != this) {
 			return false;
 		}
 		return box.state;
 	}
-	nv_form_list_item@get_list_focus(const string &in control_id) {
+	nv_form_list_item@get_list_focus(const string &in control_id) const {
 		return get_list_focus(cast < nv_form_list_box@ > (get_control_by_id(control_id)));
 	}
-	nv_form_list_item@get_list_focus(nv_form_list_box@lst) {
+	nv_form_list_item@get_list_focus(nv_form_list_box@lst) const {
 		if (@lst == null or @lst.parent != this) {
 			return null;
 		}
 		return lst.focused_item;
 	}
-	nv_form_switch_item@get_switch_focus(const string &in control_id) {
+	nv_form_switch_item@get_switch_focus(const string &in control_id) const {
 		return get_switch_focus(cast < nv_form_switch@ > (get_control_by_id(control_id)));
 	}
-	nv_form_switch_item@get_switch_focus(nv_form_switch@lst) {
+	nv_form_switch_item@get_switch_focus(nv_form_switch@lst) const {
 		if (@lst == null or @lst.parent != this) {
 			return null;
 		}
 		return lst.focused_item;
 	}
-	double get_slider_value(const string &in control_id, double def = 0) {
+	double get_slider_value(const string &in control_id, double def = 0) const {
 		return get_slider_value(cast < nv_form_slider@ > (get_control_by_id(control_id)), def);
 	}
-	double get_slider_value(nv_form_slider@slider, double def = 0) {
+	double get_slider_value(nv_form_slider@slider, double def = 0) const {
 		if (@slider == null or @slider.parent != this) {
 			return def;
 		}

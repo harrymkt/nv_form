@@ -1,0 +1,63 @@
+name: Deploy
+on:
+  push:
+    paths: ["Web/**", "docs/**"]
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  HUGO_VERSION: 0.164.0
+  # Build directory where the website will run its build. Use the dot (period) to use the current directory.
+  builddir: Web
+  # Output directory where built files will deploy. This also will be used on Pagefind search generation.
+  outdir: Web/HTML
+
+# Default to bash
+defaults:
+  run:
+    shell: bash
+
+# Permissions required for deployments
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued. However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Install Hugo
+        run: |
+          wget -O ${{ runner.temp }}/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb \
+          && sudo dpkg -i ${{ runner.temp }}/hugo.deb          
+      - name: Build
+        run: |
+          python docgen.py
+          cd ${{ env.builddir }}
+          hugo          
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ env.outdir }}
+  
+  deploy:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

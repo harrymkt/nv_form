@@ -74,6 +74,13 @@ class nv_form_tab_control: nv_form_control {
 		if (speak_position) f.insert_last((position + 1) + " of " + tab_pages.length());
 		return join(f, "  ");
 	}
+	string speak_tab_property(nv_form_tab_page@ value) {
+		if (@value == null) return "";
+		string[] f;
+		f.extend({value.name, "property page"});
+		if (value.description != "") f.insert_last(value.description);
+		return join(f, "  ");
+	}
 	int find_multinav_position(const string &in prefix) {
 		if (prefix == "" || tab_pages.length() <= 0) return -1;
 		string current_prefix;
@@ -111,7 +118,7 @@ class nv_form_tab_control: nv_form_control {
 						position = tab_pages.length() - 1;
 					tab_pages[position].control_index = -1;
 					if (was_inside_page && tab_pages[position].controls_count > 0) {
-						speak(tab_pages[position].name + "  property page");
+						speak(speak_tab_property(tab_pages[position]));
 						tab_pages[position].navigate_form(interrupt_previous_speech = false);
 					} else {
 						speak(speak_tab_item(tab_pages[position]));
@@ -144,7 +151,7 @@ class nv_form_tab_control: nv_form_control {
 			} else if (key_up(KEY_LSHIFT) && key_up(KEY_RSHIFT) && key_repeating(KEY_TAB)) {
 				// Tab forward from tab header
 				if (tab_pages[position].controls_count > 0) {
-					speak(tab_pages[position].name + "  property page");
+					speak(speak_tab_property(tab_pages[position]));
 					tab_pages[position].navigate_form(interrupt_previous_speech = false);
 				} else {
 					// Skip directly to next form control if tab page is empty
@@ -204,8 +211,8 @@ class nv_form_tab_control: nv_form_control {
 		if (handle_nv_utils(this)) return true;
 		return false;
 	}
-	nv_form_tab_page@ add_tab_page(const string &in name) {
-		nv_form_tab_page i(name);
+	nv_form_tab_page@ add_tab_page(const string &in name, const string &in description = "") {
+		nv_form_tab_page i(name, description);
 		add_tab_page(i);
 		return i;
 	}
@@ -267,7 +274,7 @@ class nv_form_tab_control: nv_form_control {
 			if (tab_pages[position].control_index == -1)
 				return speak_tab_item(tab_pages[position]);
 			else
-				return tab_pages[position].name + "  property page";
+				return speak_tab_property(tab_pages[position]);
 		}
 		return "";
 	}
@@ -277,9 +284,10 @@ class nv_form_tab_control: nv_form_control {
 	}
 }
 class nv_form_tab_page: nv_form {
-	string name;
-	nv_form_tab_page(const string &in name) {
+	string name, description;
+	nv_form_tab_page(const string &in name, const string &in description = "") {
 		this.name = name;
+		this.description = description;
 		super();
 		active = true;
 		@shortcut = nv_shortcut_manager();
