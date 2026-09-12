@@ -1,5 +1,5 @@
 # background_callback
-Set or retrieve the background callback of the form.
+Background callback of the form.
 
 `nv_form_callback@background_callback = null;`
 

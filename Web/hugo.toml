@@ -2,3 +2,8 @@ baseURL = "https://harrymkt.github.io/nv_form"
 title = "Non Visual Form"
 cleanDestinationDir = true
 publishDir = "HTML"
+theme = "hguinav"
+disableKinds = ["taxonomy"]
+[[menus.main]]
+	name = "Home"
+	pageRef = "/"

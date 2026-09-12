@@ -1,6 +1,8 @@
 # NV Form
 NV Form (`nv_form`) is a new, redesigned auditory form written in and/or for [NVGT](https://nvgt.dev) scripting game engine. This is written to make audio form more modernized, now that the old form in NVGT is legacy.
 
+[Website](https://harrymkt.github.io/nv_form)
+
 This is a modified version of [NV Form](https://github.com/ivansoto0/nv_form) originally written by Ivan Soto, as that repository is no longer being actively maintained.
 
 Original copyright notice:
@@ -23,7 +25,7 @@ You can run [test.nvgt](test.nvgt) to get to know all the features. Usually ever
 We accept contributions as long as the established [contributions guidelines](.github/CONTRIBUTING.md) are followed.
 
 ## Documentation Status
-[Documentation](docs) for the form has been written, but this does not mean that it is complete. We appreciate any contributions regarding the documentation.
+[Documentation](https://harrymkt.github.io/nv_form/docs) for the form has been written, but this does not mean that it is complete. We appreciate any contributions regarding the documentation.
 
 ## Features
 NV Form module advertises the following features:

@@ -3,7 +3,7 @@ pre/**
 !pre/README.md
 docbuild/**
 Web/HTML
-Web/content/doc.md"
+Web/content/docs.md
 *.zip
 *.apk
 *.apk.*

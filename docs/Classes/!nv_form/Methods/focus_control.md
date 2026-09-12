@@ -10,3 +10,6 @@ Set a particular control to have the keyboard focus, and notify the user.
 
 ## Returns:
 `bool`: `true` if the control was successfully focused, `false` otherwise.
+
+## Remarks:
+Alternatively, you can use `control.focus` method, in which case the `ctrl` argument will not be needed.

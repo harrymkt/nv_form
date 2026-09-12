@@ -21,12 +21,9 @@ class DocGen:
 		return stem.rstrip("+").rstrip("@")
 	
 	def adjust_heading_levels(self, markdown_text: str, target_level: int) -> str:
-		"""
-		Normalizes markdown headings so that the highest-level heading in the text 
-		matches `target_level`, scaling all lower sub-headings proportionally.
-		"""
+		"""Normalizes markdown headings so that the highest-level heading in the text matches `target_level`, scaling all lower sub-headings proportionally."""
 		lines = markdown_text.split("\n")
-		# Find the minimum heading level in the file (e.g., 1 for '#', 2 for '##')
+		# Find the minimum heading level in the file (i.e. 1 for '#', 2 for '##')
 		min_level = 7
 		for line in lines:
 			match = re.match(r"^(#{1,6})\s+(.*)$", line)
@@ -68,10 +65,10 @@ class DocGen:
 		return full_md
 	
 	def parse_md_file(self, file_path: Path) -> str:
-		"""Reads Markdown content and strips tabs."""
+		"""Reads Markdown content."""
 		with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
 			content = f.read()
-		return content.replace("\t", "")
+		return content
 	
 	def get_topic_display_name(self, file_path: Path, raw_name_override: str = None) -> str:
 		"""Determines topic display name based on index override, '+' suffix, or cleaned filename."""
@@ -107,8 +104,7 @@ class DocGen:
 					items.append((path, self.get_topic_display_name(path, entry[1])))
 		else:
 			all_entries = list(current_dir.iterdir())
-			# Rule: Sort alphabetically. '!C' will sort before 'F' because raw filename is used for sorting,
-			# but files (topics) still show up before directories (subsections).
+			# Rule: Sort alphabetically. "!C" will sort before :F" because raw filename is used for sorting, but files (topics) still show up before directories (subsections).
 			def sort_key(p: Path):
 				raw_name = p.name.lower()
 				is_dir = p.is_dir()
@@ -205,7 +201,7 @@ class DocGen:
 		for path, display_name in items:
 			main_markdown += self.process_node(path, display_name, depth=1)
 		# Write root index files (.md and .html)
-		self.write_outputs("index", "Documentation", main_markdown)
+		self.write_outputs("index", "NV Form Module Documentation", main_markdown)
 		print(f"Documentation generated successfully in: {self.output_dir}")
 
 if __name__ == "__main__":
@@ -213,4 +209,4 @@ if __name__ == "__main__":
 	out_folder = sys.argv[2] if len(sys.argv) > 2 else "./docbuild"
 	generator = DocGen(src_folder, out_folder)
 	generator.run()
-	shutil.move("docbuild/index.md", "Web/content/doc.md")
+	shutil.move("docbuild/index.md", "Web/content/docs.md")
