@@ -1,14 +1,14 @@
 abstract class nv_form_control {
 	int type;
-	string custom_type = "";
+	string custom_type;
 	string caption;
 	string id;
 	string description;
 	string help;
 	protected nv_shortcut@ __shortcut = null;
 	nv_form@parent;
-	bool speak_shortcut = true, autoactivate = false;
-	bool hidden = false, enabled = true;
+	bool speak_shortcut = true, autoactivate;
+	bool hidden, enabled = true;
 	uint util_flags = NV_UTIL_GO_INDEX | NV_UTIL_SEARCH;
 	nv_form_control_callback@ callback = null;
 	nv_form_control_callback@ help_callback = null;

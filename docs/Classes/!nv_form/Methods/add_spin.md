@@ -7,7 +7,7 @@ Creates a new spin box and adds it to the form.
 - `const string &in caption`: The label to associate.
 - `const string &in id = ""`: The ID.
 - `const string &in default_text = ""`: The initial text value.
-- `double min = 0`: Minimum value.
+- `double min = 0`: The minimum value.
 - `double max = 100`: The maximum value.
 - `bool read_only = false`: Toggle read only mode.
 - `double step = 1`: Step size when pressing arrow keys.

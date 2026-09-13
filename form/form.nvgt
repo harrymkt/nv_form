@@ -85,7 +85,7 @@ class nv_form {
 				if (!wrap) return null;
 				index = (index >= controls.length() ? 0 : controls.length() - 1);
 			}
-			if (@controls[index] != null and !controls[index].hidden)
+			if (@controls[index] != null && !controls[index].hidden)
 				return controls[index];
 		}
 		return null;
@@ -131,7 +131,7 @@ class nv_form {
 			if (@sug == null) return true;
 		}
 		handle_input();
-		if (@cancel_control != null and cancel_control.monitor()) return false;
+		if (@cancel_control != null && cancel_control.monitor()) return false;
 		nv_form_control@ctrl;
 		check_controls(ctrl);
 		if (@background_callback != null) {
@@ -259,7 +259,7 @@ class nv_form {
 		return get_list_focus(cast < nv_form_list_box@ > (get_control_by_id(control_id)));
 	}
 	nv_form_list_item@get_list_focus(nv_form_list_box@lst) const {
-		if (@lst == null or @lst.parent != this) {
+		if (@lst == null || @lst.parent != this) {
 			return null;
 		}
 		return lst.focused_item;
@@ -268,7 +268,7 @@ class nv_form {
 		return get_switch_focus(cast < nv_form_switch@ > (get_control_by_id(control_id)));
 	}
 	nv_form_switch_item@get_switch_focus(nv_form_switch@lst) const {
-		if (@lst == null or @lst.parent != this) {
+		if (@lst == null || @lst.parent != this) {
 			return null;
 		}
 		return lst.focused_item;
@@ -277,7 +277,7 @@ class nv_form {
 		return get_slider_value(cast < nv_form_slider@ > (get_control_by_id(control_id)), def);
 	}
 	double get_slider_value(nv_form_slider@slider, double def = 0) const {
-		if (@slider == null or @slider.parent != this) {
+		if (@slider == null || @slider.parent != this) {
 			return def;
 		}
 		return slider.value;
@@ -331,8 +331,8 @@ class nv_form {
 		if (added) return lst;
 		return null;
 	}
-	nv_form_slider@ add_slider(const string &in caption, const string &in id = "", double min_value = 0, double max_value = 100, double step_size = 1, double initial_value = 0, double page_size = 0, int position = -1, dictionary@ text = null) {
-		nv_form_slider slide(this, caption, id, min_value, max_value, step_size, initial_value, page_size, text);
+	nv_form_slider@ add_slider(const string &in caption, const string &in id = "", double min = 0, double max = 100, double step = 1, double initial = 0, double page = 0, int position = -1, dictionary@ text = null) {
+		nv_form_slider slide(this, caption, id, min, max, step, initial, page, text);
 		bool added = add_control(@slide, position = position);
 		if (added) return slide;
 		return null;
@@ -367,7 +367,7 @@ class nv_form {
 		if (!active) {
 			return false;
 		}
-		if (max_controls > 0 and controls.length() >= max_controls) {
+		if (max_controls > 0 && controls.length() >= max_controls) {
 			return false;
 		}
 		if (@ctrl == null) {
