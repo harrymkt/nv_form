@@ -13,6 +13,7 @@
 string nvform_word_separators = "_ .,!\\\"/[{()}]=\n:|";
 int nvform_keyboard_echo = TEXTFLAG_ENTRY_CHARACTERS;
 nv_form_event_handler@ default_nv_form_event_handler = null;
+nv_form_callback@default_nv_form_callback = null;
 
 class nv_form {
 	nv_form_control@[]controls;
@@ -25,7 +26,7 @@ class nv_form {
 	protected int __tap_timeout__ = 200;
 	bool active = false;
 	nv_form_control@primary_control = null, cancel_control = null;
-	nv_form_callback@background_callback = null;
+	nv_form_callback@background_callback = default_nv_form_callback;
 	nv_shortcut_manager@ shortcut;
 	nv_form_event_handler@ default_event_handler = null;
 	protected touch_gesture_manager@ touch;

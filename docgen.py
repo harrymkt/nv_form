@@ -65,8 +65,7 @@ class DocGen:
 				body = "\n\n".join([line.rstrip() for line in lines if line.strip()])
 			output_md.append(body)
 		full_md = "\n".join(output_md)
-		full_md = re.sub(r"//\s*example:", "## example", full_md, flags=re.IGNORECASE)
-		full_md = full_md.replace("\t", "")
+		full_md = re.sub(r"//\s*example:", "## example:", full_md, flags=re.IGNORECASE)
 		return full_md
 	
 	def parse_md_file(self, file_path: Path) -> str:
@@ -179,7 +178,7 @@ class DocGen:
 		# Write corresponding .html file
 		try:
 			import markdown
-			html_body = markdown.markdown(body, extensions=["tables", "fenced_code"])
+			html_body = markdown.markdown(body, extensions=["tables", "fenced_code"]).replace("    ", "\t")
 		except ImportError:
 			html_body = f"<pre>{body}</pre>"
 		htmlt = string.Template("""<!DOCTYPE html>

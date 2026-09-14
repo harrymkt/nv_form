@@ -1,5 +1,5 @@
 # nv_shortcut
-This class allows custom shortcut to be set.
+This is a class that defines a custom shortcut.
 
 `nv_shortcut(int k, bool ctrl = false, bool shift = false, bool alt = false, uint tap = 1);`
 
