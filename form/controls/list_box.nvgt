@@ -152,7 +152,7 @@ class nv_form_list_box: nv_form_control {
 				speak(items.length() + " items selected");
 				return true;
 			}
-			if (key_pressed(KEY_SPACE) && @focused_item != null) {
+			if (enabled && key_pressed(KEY_SPACE) && @focused_item != null) {
 				focused_item.selected = !focused_item.selected;
 				speak((focused_item.selected ? "Checked" : "Not checked"));
 				return true;
@@ -202,6 +202,7 @@ class nv_form_list_box: nv_form_control {
 		}
 		@items[item_index] = null;
 		items.remove_at(item_index);
+		if (list_position >= int(items.length())) list_position = int(items.length()) - 1;
 		return true;
 	}
 	int get_item_index(const string &in id) {
@@ -239,19 +240,20 @@ class nv_form_list_box: nv_form_control {
 		for (uint i = 0; i < this.items.length(); i++)
 			nav_items[i] = items[i].text;
 		bool already_on_result = false;
-		if (list_position > -1) already_on_result = nav_items[list_position].find(text) > -1;
+		bool focused = list_position > -1 && list_position < int(items.length());
+		if (focused) already_on_result = nav_items[list_position].find(text) > -1;
 		string wrapped = "";
-		int pos = list_position;
-		if (pos < 0) pos = 0;
-		for (int i = pos + dir; i != pos; i += dir) {
+		int length = items.length();
+		int i = focused ? list_position : (dir > 0 ? length - 1 : 0);
+		for (int step = focused ? 1 : 0; step < length; step++) {
+			i += dir;
 			if (i < 0) {
-				i = items.length() - 1;
-				wrapped = "wrapped to bottom";
-			} else if (i >= items.length()) {
+				i = length - 1;
+				if (focused) wrapped = "wrapped to bottom";
+			} else if (i >= length) {
 				i = 0;
-				wrapped = "wrapped to top";
+				if (focused) wrapped = "wrapped to top";
 			}
-			if (i == pos) break;
 			if (nav_items[i].find(text) < 0) continue;
 			if (set_pos(i, false, fire_event = true)) {
 				if (!silent) {

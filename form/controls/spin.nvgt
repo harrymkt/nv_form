@@ -1,11 +1,11 @@
 class nv_form_spin: nv_form_input {
-	double __min = 0, __max = 100, step = 1, page = 10;
+	double __min = 0, __max = 100, __step = 1, page = 10;
 	nv_form_spin(nv_form@parent, const string &in caption, const string &in id = "", double min = 0, double max = 100, double step = 1, double page = 0) {
 		super(@parent, caption, id);
 		type = NV_FORM_CT_SPIN;
 		__min = min;
 		__max = max;
-		this.step = step;
+		__step = step;
 		this.page = page;
 		set_chars();
 		if (this.page <= 0) this.page = this.step * 10;
@@ -42,6 +42,15 @@ class nv_form_spin: nv_form_input {
 		}
 		set {
 			__max = value;
+			set_chars();
+		}
+	}
+	double step {
+		get const {
+			return __step;
+		}
+		set {
+			__step = value;
 			set_chars();
 		}
 	}
@@ -107,11 +116,17 @@ class nv_form_spin: nv_form_input {
 		return d;
 	}
 	void on_focus_gained_immediate() {
-		text = output;
+		normalize();
 	}
-	bool add(const string &in character, bool silent = false) {
-		if (!nv_form_input::add(character, silent)) return false;
-		text = output;
-		return true;
+	void on_focus_lost() {
+		normalize();
+	}
+	void normalize() {
+		string value = output;
+		if (text == value) return;
+		text = value;
+		sel_start = -1;
+		sel_end = -1;
+		validate_positions();
 	}
 }

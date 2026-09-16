@@ -55,6 +55,7 @@ class nv_form_suggestion_manager : nv_utility_form {
 		list.page_size = page_size;
 		nv_form_button@ cancel_btn = f.add_button("Cancel", "cancel", false, true);
 		@cancel_btn.shortcut = nv_shortcut(KEY_C, alt = true);
+		cancel_btn.autoactivate = true;
 		cancel_btn.hidden = true;
 		update_list(false);
 		@parent_form.nv_utility_form = this;
@@ -104,10 +105,16 @@ class nv_form_suggestion_manager : nv_utility_form {
 		if (key == KEY_RETURN || key == KEY_NUMPAD_ENTER || key == KEY_TAB) {
 			nv_form_list_item@ item = list.focused_item;
 			if (@item != null) {
-				owner_input.text = item.text;
-				owner_input.cursor = item.text.length();
-				speak("Selected " + item.text);
 				close();
+				if (!owner_input.read_only && (owner_input.max_length <= 0 || owner_input.utf8length(item.text) <= uint(owner_input.max_length)) && (owner_input.disallowed_chars.length() == 0 || !owner_input.is_disallowed_char(item.text))) {
+					owner_input.text = item.text;
+					owner_input.cursor = item.text.length();
+					owner_input.unselect(true);
+					nv_form_input_event e(owner_input);
+					e.character = item.text;
+					owner_input.event.fire(e);
+				}
+				speak("Selected " + item.text);
 				return true;
 			}
 		}

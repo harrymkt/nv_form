@@ -41,6 +41,7 @@ class nv_form {
 		@primary_control = null;
 		@cancel_control = null;
 		@nv_utility_form = null;
+		if (@shortcut != null) shortcut.detach();
 		@shortcut = null;
 		@default_event_handler = default_nv_form_event_handler;
 	}
@@ -105,8 +106,12 @@ class nv_form {
 		touch_keyboard_interface tki(touch, touches);
 		touch.add_touch_interface(tki);
 		active = true;
+		if (@shortcut != null) shortcut.detach();
 		@shortcut = nv_shortcut_manager();
 		shortcut.tap_timeout = tap_timeout;
+		foreach (nv_form_control@ l: controls) {
+			if (@l != null && @l.shortcut != null) shortcut.add(l.shortcut);
+		}
 		if (change_screen_title) show_window(window_title);
 		if (!silent)
 			speak(window_title + (say_dialog ? "  dialog" : ""), false);
@@ -129,7 +134,10 @@ class nv_form {
 		if (@nv_utility_form != null) {
 			nv_utility_form.monitor();
 			nv_form_suggestion_manager@ sug = cast<nv_form_suggestion_manager@>(nv_utility_form);
-			if (@sug == null) return true;
+			if (@sug == null) {
+				if (@shortcut != null) shortcut.consume();
+				return true;
+			}
 		}
 		handle_input();
 		if (@cancel_control != null && cancel_control.monitor()) return false;
@@ -148,6 +156,10 @@ class nv_form {
 		if (@ctrl != null) {
 			if (@nv_utility_form != null) {
 				nv_form_suggestion_manager@ sug = cast<nv_form_suggestion_manager@>(nv_utility_form);
+				if (@sug != null && @sug.owner_input != @ctrl) {
+					sug.close();
+					@sug = null;
+				}
 				if (@sug != null) {
 					if (key_repeating(KEY_DOWN)) handled = sug.handle_key(KEY_DOWN);
 					else if (key_repeating(KEY_UP)) handled = sug.handle_key(KEY_UP);
@@ -184,16 +196,20 @@ class nv_form {
 					cancel_control.fire();
 					handled = true;
 				}
-			} else if (@pctrl != null && pctrl.type != NV_FORM_CT_KEYBOARD_AREA && (key_pressed(KEY_RETURN) || key_pressed(KEY_NUMPAD_ENTER))) {
+			} else if (@pctrl != null && (@ctrl == null || ctrl.type != NV_FORM_CT_KEYBOARD_AREA) && (key_pressed(KEY_RETURN) || key_pressed(KEY_NUMPAD_ENTER))) {
 				pctrl.fire();
 				handled = true;
 			}
 		}
-		if (handled) return true;
+		if (@shortcut == null) return handled;
+		if (handled) {
+			shortcut.consume();
+			return true;
+		}
 		bool found_shortcut = false;
 		int sposition = clamp(control_index + 1, 0, controls.length() - 1);
 		for (uint i = sposition; i < controls.length(); i++) {
-			if (@controls[i] == null || @controls[i].shortcut == null) continue;
+			if (@controls[i] == null || @controls[i].shortcut == null || (controls[i].hidden && !controls[i].autoactivate)) continue;
 			if (controls[i].check_shortcut()) {
 				found_shortcut = true;
 				controls[i].shortcut_focus();
@@ -204,15 +220,16 @@ class nv_form {
 		if (!found_shortcut) {
 			for (uint i = 0; i < controls.length(); i++) {
 				nv_form_control@l = controls[i];
-				if (@l == null || @l.shortcut == null) continue;
+				if (@l == null || @l.shortcut == null || (l.hidden && !l.autoactivate)) continue;
 				if (l.check_shortcut()) {
+					found_shortcut = true;
 					l.shortcut_focus();
 					shortcut.consume();
 					break;
 				}
 			}
 		}
-		return handled;
+		return found_shortcut;
 	}
 	bool is_pressed(const string &in control_id) const {
 		nv_form_control@ctrl = get_control_by_id(control_id);
@@ -228,7 +245,7 @@ class nv_form {
 		return false;
 	}
 	bool is_pressed(nv_form_button@btn) const {
-		if (@btn.parent != this) {
+		if (@btn == null || @btn.parent != this) {
 			return false;
 		}
 		bool result = btn.pressed;
@@ -236,7 +253,7 @@ class nv_form {
 		return result;
 	}
 	bool is_pressed(nv_form_link@link) const {
-		if (@link.parent != this) {
+		if (@link == null || @link.parent != this) {
 			return false;
 		}
 		bool result = link.pressed;
@@ -251,7 +268,7 @@ class nv_form {
 		return is_checked(box);
 	}
 	bool is_checked(nv_form_checkbox@box) const {
-		if (@box.parent != this) {
+		if (@box == null || @box.parent != this) {
 			return false;
 		}
 		return box.state;
@@ -375,8 +392,12 @@ class nv_form {
 			return false;
 		}
 		if (@callback != null) @ctrl.callback = callback;
-		if (position < 0) controls.insert_last(ctrl);
-		else controls.insert_at(position, ctrl);
+		if (position < 0 || position >= int(controls.length())) controls.insert_last(ctrl);
+		else {
+			controls.insert_at(position, ctrl);
+			if (control_index >= position) control_index++;
+		}
+		if (@shortcut != null && @ctrl.shortcut != null && shortcut.shortcuts.find_by_ref(ctrl.shortcut) < 0) shortcut.add(ctrl.shortcut);
 		if (primary) @primary_control = @ctrl;
 		if (cancel) @cancel_control = @ctrl;
 		return true;
@@ -394,8 +415,10 @@ class nv_form {
 	private bool set_focus(int control_index, bool quiet = false, bool interrupt_previous_speech = true) {
 		if (control_index<0 || control_index >= controls.length()) return false;
 		nv_form_control@ current = current_control;
-		if (@current != null)
+		if (@current != null) {
 			current.event.fire(nv_form_event(current, NV_FORM_EVENT_FOCUS_LOST));
+			current.on_focus_lost();
+		}
 		this.control_index = control_index;
 		current_control.event.fire(nv_form_event(this.current_control, NV_FORM_EVENT_FOCUS_GAINED));
 		current_control.on_focus_gained_immediate();
@@ -417,8 +440,7 @@ class nv_form {
 		return f.trim_whitespace();
 	}
 	bool speak_current_control(bool interrupt = true) {
-		if (control_index == -1) return false;
-		nv_form_control@ctrl = controls[control_index];
+		nv_form_control@ctrl = current_control;
 		if (@ctrl == null) return false;
 		string ct = ctrl.str;
 		if (ct != "" && !speak_control_attributes_separately) return speak(ct, interrupt);

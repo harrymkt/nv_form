@@ -70,6 +70,7 @@ abstract class nv_form_control {
 	void on_fire() { }
 	void on_focus_gained_immediate() { }
 	void on_focus_gained() { }
+	void on_focus_lost() { }
 	void show_help() {
 		bool ok = false;
 		if (@help_callback != null) ok = help_callback(this);

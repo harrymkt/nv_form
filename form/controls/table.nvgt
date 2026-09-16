@@ -27,8 +27,15 @@ class nv_form_table : nv_form_control {
 		if (rows.length() <= 0 || row_index < 0 || row_index >= rows.length()) return null;
 		return rows[row_index];
 	}
+	int get_column_count() const property {
+		int count = headers.length();
+		nv_form_table_row@ row = focused_row;
+		if (@row != null && int(row.data.length()) > count) count = row.data.length();
+		return count;
+	}
 	bool handle_input() {
 		if (rows.length() == 0) return false;
+		bool modified = (keyboard_modifiers & (KEYMOD_CTRL | KEYMOD_ALT | KEYMOD_SHIFT | KEYMOD_GUI)) != 0;
 		if (key_repeating(KEY_UP)) {
 			if (row_index > 0) {
 				row_index--;
@@ -51,12 +58,13 @@ class nv_form_table : nv_form_control {
 			return true;
 		}
 		if (key_repeating(KEY_RIGHT)) {
-			if (col_index + 1 < int(headers.length())) {
+			if (col_index + 1 < column_count) {
 				col_index++;
 				speak_cell();
 			}
 			return true;
 		}
+		if (modified) return false;
 		if (key_pressed(KEY_H)) {
 			speak_header();
 			return true;
@@ -96,7 +104,7 @@ class nv_form_table : nv_form_control {
 		}
 		string s = text;
 		if (speak_position) {
-			s += "  row " + (row_index + 1) + " of " + rows.length() + ", col " + (col_index + 1) + " of " + headers.length();
+			s += "  row " + (row_index + 1) + " of " + rows.length() + ", col " + (col_index + 1) + " of " + column_count;
 		}
 		speak(s);
 	}
@@ -109,19 +117,20 @@ class nv_form_table : nv_form_control {
 		nv_form_table_row@ row = focused_row;
 		if (@row == null) return;
 		string[] bits;
-		for (uint i = 0; i < headers.length(); i++) {
-			string h = headers[i];
-			string d = (i < row.data.length() ? row.data[i] : "");
-			bits.insert_last(h + ": " + d);
+		for (int i = 0; i < column_count; i++) {
+			string h = (i < int(headers.length()) ? headers[i] : "");
+			string d = (i < int(row.data.length()) ? row.data[i] : "");
+			bits.insert_last(h != "" ? h + ": " + d : d);
 		}
 		speak(join(bits, ", "));
 	}
 	void sort_by_column(int col, bool ascending = true) {
-		if (col < 0 || col >= headers.length() || rows.length() < 2) return;
+		if (col < 0 || col >= column_count || rows.length() < 2) return;
 		last_sort_col = col;
 		last_sort_ascending = ascending;
 		quicksort(0, rows.length() - 1, col, ascending);
-		speak("Sorted by " + headers[col] + (ascending ? " ascending" : " descending"));
+		string name = col < int(headers.length()) ? headers[col] : "column " + (col + 1);
+		speak("Sorted by " + name + (ascending ? " ascending" : " descending"));
 		row_index = 0;
 		speak_cell();
 	}
@@ -160,6 +169,7 @@ class nv_form_table : nv_form_control {
 	private bool is_numeric(const string &in s) {
 		if (s.empty()) return false;
 		bool dot = false;
+		bool digit = false;
 		for (uint i = 0; i < s.length(); i++) {
 			if (s[i] == "-" && i == 0) continue;
 			if (s[i] == ".") {
@@ -168,15 +178,17 @@ class nv_form_table : nv_form_control {
 				continue;
 			}
 			if (!s[i].is_digits()) return false;
+			digit = true;
 		}
-		return true;
+		return digit;
 	}
 	string get_fixed_type_last() property {
 		nv_form_table_row@ row = focused_row;
 		if (@row == null) return "empty";
-		string s = "row " + (row_index + 1) + ", " + headers.length() + " columns. ";
-		if (col_index >= 0 && col_index < int(row.data.length()) && col_index < int(headers.length())) {
-			s += headers[col_index] + ": " + row.data[col_index];
+		string s = "row " + (row_index + 1) + ", " + column_count + " columns. ";
+		if (col_index >= 0 && col_index < int(row.data.length())) {
+			if (col_index < int(headers.length())) s += headers[col_index] + ": ";
+			s += row.data[col_index];
 		}
 		return s;
 	}

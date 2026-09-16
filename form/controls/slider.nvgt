@@ -47,6 +47,7 @@ class nv_form_slider: nv_form_control {
 	}
 	bool handle_input() {
 		if (@touch != null) touch.monitor();
+		if (!enabled) return false;
 		if (key_repeating(KEY_DOWN)) {
 			set_value(value - step);
 			speak(text_value);

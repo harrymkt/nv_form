@@ -96,18 +96,24 @@ class nv_form_treeview : nv_form_control {
 	}
 	void rebuild() {
 		nv_form_tree_node@ current_focused = get_focused_node();
+		int old_pos = pos;
 		visible_nodes.resize(0);
 		for (uint i = 0; i < nodes.length(); i++) {
 			add_node_to_visible_recursive(nodes[i]);
 		}
 		pos = -1;
-		if (@current_focused != null) {
-			for (uint i = 0; i < visible_nodes.length(); i++) {
-				if (@visible_nodes[i] == @current_focused) {
-					set_pos(i, fire_event = true);
-					break;
-				}
+		while (@current_focused != null) {
+			int index = visible_nodes.find_by_ref(current_focused);
+			if (index > -1) {
+				pos = index;
+				break;
 			}
+			@current_focused = current_focused.parent;
+		}
+		if (pos != old_pos) {
+			dictionary a;
+			a.set("old_pos", old_pos);
+			fire_item_change_event(a);
 		}
 	}
 	void add_node_to_visible_recursive(nv_form_tree_node@ node) {
@@ -204,7 +210,7 @@ class nv_form_treeview : nv_form_control {
 		}
 		if (key_repeating(KEY_DOWN)) {
 			if (pos < visible_nodes.length() - 1) {
-				set_pos(pos + 1);
+				set_pos(pos + 1, fire_event = true);
 				speak_current_node();
 				return true;
 			}
@@ -218,7 +224,7 @@ class nv_form_treeview : nv_form_control {
 		}
 		if (key_repeating(KEY_PAGEDOWN)) {
 			if (pos < visible_nodes.length() - 1) {
-				set_pos(pos + page_size);
+				set_pos(pos + page_size, fire_event = true);
 				speak_current_node();
 				return true;
 			}
@@ -288,19 +294,20 @@ class nv_form_treeview : nv_form_control {
 		for (uint i = 0; i < this.visible_nodes.length(); i++)
 			nav_nodes[i] = visible_nodes[i].text;
 		bool already_on_result = false;
-		if (pos > -1) already_on_result = nav_nodes[pos].find(text) > -1;
+		bool focused = pos > -1 && pos < int(visible_nodes.length());
+		if (focused) already_on_result = nav_nodes[pos].find(text) > -1;
 		string wrapped = "";
-		int position = pos;
-		if (position < 0) position = 0;
-		for (int i = position + dir; i != position; i += dir) {
+		int length = visible_nodes.length();
+		int i = focused ? pos : (dir > 0 ? length - 1 : 0);
+		for (int step = focused ? 1 : 0; step < length; step++) {
+			i += dir;
 			if (i < 0) {
-				i = visible_nodes.length() - 1;
-				wrapped = "wrapped to bottom";
-			} else if (i >= visible_nodes.length()) {
+				i = length - 1;
+				if (focused) wrapped = "wrapped to bottom";
+			} else if (i >= length) {
 				i = 0;
-				wrapped = "wrapped to top";
+				if (focused) wrapped = "wrapped to top";
 			}
-			if (i == position) break;
 			if (nav_nodes[i].find(text) < 0) continue;
 			if (set_pos(i, false, fire_event = true)) {
 				if (!silent) {

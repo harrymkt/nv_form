@@ -9,6 +9,7 @@ class nv_form_button: nv_form_control {
 	}
 	bool monitor() { return pressed; }
 	void fire() {
+		if (!enabled) return;
 		pressed = true;
 		nv_form_control::fire();
 	}

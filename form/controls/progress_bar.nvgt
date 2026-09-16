@@ -34,13 +34,12 @@ class nv_form_progress_bar: nv_form_control {
 		#endif
 	}
 	void clamp_value() {
-		if (value < min_value) value = min_value;
-		if (value > max_value) value = max_value;
+		if (cur_value < min_value) cur_value = min_value;
+		if (cur_value > max_value) cur_value = max_value;
 	}
 	void set_value(double v) property {
-		if (v < min_value || v > max_value) {
-			return;
-		}
+		if (v < min_value) v = min_value;
+		if (v > max_value) v = max_value;
 		bool should_speak = abs(v - last_spoken_value) >= update_interval;
 		cur_value = v;
 		if (should_speak) {
