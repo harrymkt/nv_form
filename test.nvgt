@@ -75,7 +75,7 @@ void main() {
 	lst_c.custom_type = "Combo box";
 	lst_c.add_items({"NVGT", "CPP", "HTML", "JS", "CSS"});
 	f.add_control(lst_c);
-	nv_form_slider@slider = f.add_slider("volume level", "vol", max_value = 100, page_size = 5);
+	nv_form_slider@slider = f.add_slider("volume level", "vol", max = 100, page = 5);
 	nv_form_keyboard_area@ kbd = f.add_keyboard_area("have fun here", "kbd");
 	kbd.description = "UI lives here";
 	@kbd.shortcut = nv_shortcut(KEY_G, alt = true);

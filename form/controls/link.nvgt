@@ -11,6 +11,7 @@ class nv_form_link: nv_form_control {
 	}
 	bool monitor() { return pressed; }
 	void fire() {
+		if (!enabled) return;
 		pressed = true;
 		urlopen(url);
 		nv_form_control::fire();

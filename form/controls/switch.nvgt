@@ -36,7 +36,7 @@ class nv_form_switch: nv_form_control {
 	}
 	bool handle_input() {
 		if (@touch != null) touch.monitor();
-		if (key_repeating(KEY_SPACE)) {
+		if (enabled && key_repeating(KEY_SPACE)) {
 			bool nav = next;
 			if (nav) speak(focused_item.text);
 			return true;
@@ -66,6 +66,7 @@ class nv_form_switch: nv_form_control {
 		}
 		@items[item_index] = null;
 		items.remove_at(item_index);
+		if (item_index < index || index >= int(items.length())) index--;
 		return true;
 	}
 	int get_item_index(const string &in id) {

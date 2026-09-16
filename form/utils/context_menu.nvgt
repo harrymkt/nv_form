@@ -45,6 +45,7 @@ class nv_form_context_menu : nv_utility_form {
 		ok_btn.hidden = true;
 		nv_form_button@ cancel_btn = f.add_button("Cancel", "cancel", false, true);
 		@cancel_btn.shortcut = nv_shortcut(KEY_C, alt = true);
+		cancel_btn.autoactivate = true;
 		cancel_btn.hidden = true;
 		@f.background_callback = parent.background_callback;
 		f.focus_control(list, true, false);

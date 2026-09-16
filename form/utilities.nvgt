@@ -123,7 +123,7 @@ class nv_go_to_index : nv_utility_form {
 				return;
 			}
 			if (@ctrl_list != null) {
-				if (!ctrl_list.set_pos(parse_int(idx) - 1, false)) {
+				if (!ctrl_list.set_pos(parse_int(idx) - 1, false, true)) {
 					speak("Invalid item number");
 					f.focus_control(f_index, false, false);
 					return;
@@ -132,7 +132,7 @@ class nv_go_to_index : nv_utility_form {
 				parent.focus_control(ctrl);
 				return;
 			} else if (@ctrl_tree != null) {
-				if (!ctrl_tree.set_pos(parse_int(idx) - 1, false)) {
+				if (!ctrl_tree.set_pos(parse_int(idx) - 1, false, true)) {
 					speak("Invalid item number");
 					f.focus_control(f_index, false, false);
 					return;
@@ -141,7 +141,7 @@ class nv_go_to_index : nv_utility_form {
 				parent.focus_control(ctrl);
 				return;
 			} else if (@ctrl_tab != null) {
-				if (!ctrl_tab.set_pos(parse_int(idx) - 1, false)) {
+				if (!ctrl_tab.set_pos(parse_int(idx) - 1, false, true)) {
 					speak("Invalid item number");
 					f.focus_control(f_index, false, false);
 					return;

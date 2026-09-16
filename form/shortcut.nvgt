@@ -112,11 +112,18 @@ class nv_shortcut_manager : engine_key_event_listener {
 	// Captured modifier state at time of press
 	bool last_ctrl, last_shift, last_alt;
 	bool force_resolved = false;
+	private bool attached = false;
 	nv_shortcut_manager() {
 		::on_key_press += this;
+		attached = true;
 	}
 	~nv_shortcut_manager() {
+		detach();
+	}
+	void detach() {
+		if (!attached) return;
 		::on_key_press -= this;
+		attached = false;
 	}
 	void add(nv_shortcut@ s) {
 		if (@s != null) shortcuts.insert_last(s);

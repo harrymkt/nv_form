@@ -28,6 +28,7 @@ class nv_form_input: nv_form_control {
 		touch.add_touch_interface(touch_keyboard_interface(touch, touches));
 	}
 	string get_control_info() {
+		validate_positions();
 		string f;
 		if (password_mask != "") {
 			if (text.length() > 0)
@@ -36,13 +37,13 @@ class nv_form_input: nv_form_control {
 				f = "blank";
 		} else {
 			if (text.length() > 0) {
-				if (sel_start >= 0) {
-					if (sel_end - sel_start >= 1024)
-						f = highlight_select_speech_text + " " + (sel_end - sel_start + 1) + " characters";
+				if (has_selection) {
+					if (sel_end - sel_start + 1 >= 1024)
+						f = highlight_select_speech_text + " " + utf8length(selected_text) + " characters";
 					else
-						f = highlight_select_speech_text + " " + text.substr(sel_start, sel_end - sel_start + 1);
+						f = highlight_select_speech_text + " " + selected_text;
 				} else
-					f = read_line(current_line_start_position());
+					f = read_line(find_line_start(cursor));
 			} else
 				f = "blank";
 		}
@@ -64,8 +65,11 @@ class nv_form_input: nv_form_control {
 	bool handle_input() {
 		if (@parent.current_control != @this) return false;
 		if (@touch != null) touch.monitor();
+		validate_positions();
 		string char = get_characters();
-		if (!read_only) {
+		bool ctrl = key_down(KEY_LCTRL) || key_down(KEY_RCTRL);
+		bool shift = key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT);
+		if (!read_only && enabled) {
 			if (char != "") {
 				if (disallowed_chars.length() > 0 && is_disallowed_char(char)) {
 					if (char_disallowed_description != "") speak(char_disallowed_description);
@@ -77,15 +81,15 @@ class nv_form_input: nv_form_control {
 					add(char);
 				return true;
 			}
-			if (multiline && keyboard_modifiers & KEYMOD_SHIFT > 0 && (key_pressed(KEY_RETURN) || key_pressed(KEY_NUMPAD_ENTER))) {
+			if (multiline && shift && (key_pressed(KEY_RETURN) || key_pressed(KEY_NUMPAD_ENTER))) {
 				add_new_line();
 				return true;
 			}
-			if (clipboard_flags & NV_CLIPBOARD_FLAG_CUT > 0 && keyboard_modifiers & KEYMOD_CTRL > 0 && key_repeating(KEY_X) && password_mask == "") {
+			if ((clipboard_flags & NV_CLIPBOARD_FLAG_CUT) != 0 && ctrl && key_repeating(KEY_X)) {
 				cut_highlighted();
 				return true;
 			}
-			if (clipboard_flags & NV_CLIPBOARD_FLAG_PASTE > 0 && ((keyboard_modifiers & KEYMOD_CTRL > 0 && key_repeating(KEY_V)) || key_pressed(KEY_PASTE))) {
+			if ((clipboard_flags & NV_CLIPBOARD_FLAG_PASTE) != 0 && ((ctrl && key_repeating(KEY_V)) || key_pressed(KEY_PASTE))) {
 				paste_text();
 				return true;
 			}
@@ -94,7 +98,7 @@ class nv_form_input: nv_form_control {
 					speak(delete_disabled_message);
 					return true;
 				}
-				if (((keyboard_modifiers & KEYMOD_CTRL) > 0) && (sel_start < 0 || sel_end < 0 || sel_start > sel_end)) {
+				if (ctrl && !has_selection) {
 					delete_word_left();
 					return true;
 				}
@@ -106,7 +110,7 @@ class nv_form_input: nv_form_control {
 					speak(delete_disabled_message);
 					return true;
 				}
-				if (((keyboard_modifiers & KEYMOD_CTRL) > 0) && (sel_start < 0 || sel_end < 0 || sel_start > sel_end)) {
+				if (ctrl && !has_selection) {
 					delete_word_right();
 					return true;
 				}
@@ -114,82 +118,63 @@ class nv_form_input: nv_form_control {
 				return true;
 			}
 		}
-		if (((key_down(KEY_LCTRL)) || (key_down(KEY_RCTRL))) && key_up(KEY_LSHIFT) && key_up(KEY_RSHIFT) && (key_repeating(KEY_A))) {
+		if (ctrl && !shift && key_repeating(KEY_A)) {
 			highlight_all();
 			return true;
 		}
 		if (key_repeating(KEY_F2)) {
 			int dir = 1;
 			if ((keyboard_modifiers & KEYMOD_SHIFT) != 0) dir = -1;
-			nvform_keyboard_echo = nvform_change_keyboard_echo(nvform_keyboard_echo, dir);
+			nvform_keyboard_echo = nvform_change_keyboard_echo(echo_flag, dir);
 			parent.set_keyboard_echo(nvform_keyboard_echo);
+			echo_flag = nvform_keyboard_echo;
 			speak(nvform_keyboard_echo_string(nvform_keyboard_echo));
 			return true;
 		}
-		if (((clipboard_flags & NV_CLIPBOARD_FLAG_COPY) > 0) && ((keyboard_modifiers & KEYMOD_CTRL) > 0) && (key_repeating(KEY_C)) && (password_mask == "")) {
+		if ((clipboard_flags & NV_CLIPBOARD_FLAG_COPY) != 0 && ctrl && key_repeating(KEY_C)) {
 			copy_highlighted();
 			return true;
 		}
 		if (key_repeating(KEY_LEFT)) {
-			if ((key_down(KEY_LCTRL)) || (key_down(KEY_RCTRL))) {
-				if (password_mask == "") {
-					if ((key_down(KEY_LSHIFT)) || (key_down(KEY_RSHIFT)))
-						move_word_left(true);
-					else
-						move_word_left();
-				}
-				return true;
-			}
-			if ((key_down(KEY_LSHIFT)) || (key_down(KEY_RSHIFT))) {
+			if (ctrl)
+				move_word_left(shift);
+			else if (shift)
 				highlight_left();
-				return true;
-			}
-			move_left();
+			else
+				move_left();
 			return true;
 		}
 		if (key_repeating(KEY_RIGHT)) {
-			if ((key_down(KEY_LCTRL)) || (key_down(KEY_RCTRL))) {
-				if (password_mask == "") {
-					if ((key_down(KEY_LSHIFT)) || (key_down(KEY_RSHIFT)))
-						move_word_right(true);
-					else
-						move_word_right();
-				}
-				return true;
-			}
-			if ((key_down(KEY_LSHIFT)) || (key_down(KEY_RSHIFT))) {
+			if (ctrl)
+				move_word_right(shift);
+			else if (shift)
 				highlight_right();
-				return true;
-			}
-			move_right();
+			else
+				move_right();
 			return true;
 		}
 		if (key_repeating(KEY_UP)) {
-			if (((key_down(KEY_LSHIFT)) || (key_down(KEY_RSHIFT))) && password_mask == "")
+			if (shift)
 				highlight_up();
 			else
 				previous_line();
 			return true;
 		}
 		if (key_repeating(KEY_DOWN)) {
-			if (((key_down(KEY_LSHIFT)) || (key_down(KEY_RSHIFT))) && password_mask == "")
+			if (shift)
 				highlight_down();
 			else
 				next_line();
 			return true;
 		}
 		if (key_repeating(KEY_HOME)) {
-			if ((key_down(KEY_LCTRL)) || (key_down(KEY_RCTRL)) || (multiline == false)) {
-				if ((key_down(KEY_LSHIFT)) || (key_down(KEY_RSHIFT)))
+			if (ctrl || !multiline) {
+				if (shift)
 					highlight_to_field_start();
-				else {
-					if (!multiline)
-						line_start();
-					else
-						field_start();
-				}
+				else
+					field_start();
 			} else {
-				if ((key_down(KEY_LSHIFT)) || (key_down(KEY_RSHIFT)))
+				if (shift)
 					highlight_to_line_start();
 				else
 					line_start();
@@ -197,17 +182,13 @@ class nv_form_input: nv_form_control {
 			return true;
 		}
 		if (key_repeating(KEY_END)) {
-			if ((key_down(KEY_LCTRL)) || (key_down(KEY_RCTRL)) || (multiline == false)) {
-				if ((key_down(KEY_LSHIFT)) || (key_down(KEY_RSHIFT)))
+			if (ctrl || !multiline) {
+				if (shift)
 					highlight_to_field_end();
-				else {
-					if (!multiline)
-						line_end();
-					else
-						field_end();
-				}
+				else
+					field_end();
 			} else {
-				if ((key_down(KEY_LSHIFT)) || (key_down(KEY_RSHIFT)))
+				if (shift)
 					highlight_to_line_end();
 				else
 					line_end();
@@ -218,67 +199,117 @@ class nv_form_input: nv_form_control {
 		return false;
 	}
 	void on_focus_gained() {
-		start_text_input(); // Especially for Android keyboard.
-		get_characters(); // Clean up any characters that might have been accumulated.
+		start_text_input();
+		get_characters();
 	}
-	bool add(const string &in character, bool silent = false) {
-		string new_text = text;
-		bool prevselect = false;
-		if (sel_start > -1 && sel_end > -1) {
-			cursor = sel_start;
-			new_text = text.substr(0, cursor) + text.substr(sel_end + 1);
+	bool get_has_selection() const property {
+		return sel_start > -1 && sel_end >= sel_start && sel_start < int(text.length());
+	}
+	string get_selected_text() const property {
+		if (!has_selection) return "";
+		return text.substr(sel_start, sel_end - sel_start + 1);
+	}
+	void validate_positions() {
+		int length = text.length();
+		if (cursor < 0) cursor = 0;
+		if (cursor > length) cursor = length;
+		if (sel_start < 0 || sel_end < sel_start || sel_start >= length) {
 			sel_start = -1;
 			sel_end = -1;
-			prevselect = true;
+		} else if (sel_end >= length)
+			sel_end = length - 1;
+	}
+	bool is_separator(int position) {
+		if (position < 0 || position >= int(text.length())) return false;
+		return nvform_word_separators.find(text[position]) > -1;
+	}
+	int find_line_start(int position) {
+		if (position > int(text.length())) position = text.length();
+		while (position > 0 && text[position - 1] != "\n") position--;
+		return position;
+	}
+	int find_line_end(int position) {
+		if (position < 0) position = 0;
+		while (position < int(text.length()) && text[position] != "\n") position++;
+		return position;
+	}
+	int find_previous_line(int position) {
+		int start = find_line_start(position);
+		if (start == 0) return 0;
+		return find_line_start(start - 1);
+	}
+	int find_next_line(int position) {
+		int end = find_line_end(position);
+		if (end >= int(text.length())) return text.length();
+		return end + 1;
+	}
+	int find_previous_word(int position) {
+		if (password_mask != "") return find_line_start(position);
+		while (position > 0 && is_separator(position - 1)) position--;
+		while (position > 0 && !is_separator(position - 1)) position--;
+		return position;
+	}
+	int find_next_word(int position) {
+		if (password_mask != "") return find_line_end(position);
+		int length = text.length();
+		while (position < length && !is_separator(position)) position++;
+		while (position < length && is_separator(position)) position++;
+		return position;
+	}
+	bool add(const string &in character, bool silent = false) {
+		if (read_only || character == "") return false;
+		validate_positions();
+		string new_text = text;
+		int position = cursor;
+		bool replaced = false;
+		if (has_selection) {
+			new_text = text.substr(0, sel_start) + text.substr(sel_end + 1);
+			position = sel_start;
+			replaced = true;
 		}
-		if ((max_length > 0) && (utf8length(new_text) >= max_length))
+		if (max_length > 0 && utf8length(new_text) + utf8length(character) > max_length)
 			return false;
-		new_text = new_text.substr(0, cursor) + character + new_text.substr(cursor);
-		if (read_only == false) {
-			text = new_text;
-			cursor += character.length();
-		}
-		if (echo_flag == TEXTFLAG_ENTRY_CHARACTERS || echo_flag == TEXTFLAG_ENTRY_CHARACTERS_WORDS)
-			speak(input_box_speak(find_appropriate_character(character)));
-		if (nvform_word_separators .find(character) > -1 && (echo_flag == TEXTFLAG_ENTRY_WORDS || echo_flag == TEXTFLAG_ENTRY_CHARACTERS_WORDS)) {
-			int temp_position = cursor - 1;
-			while (temp_position > 0 && (temp_position >= text.length() || nvform_word_separators .find(text[temp_position - 1]) < 0 && text[temp_position - 1] != "\n"))
-				temp_position--;
-			string word = read_word_from_position(temp_position);
-			speak(word, echo_flag != TEXTFLAG_ENTRY_CHARACTERS_WORDS);
-		}
+		text = new_text.substr(0, position) + character + new_text.substr(position);
+		cursor = position + character.length();
+		sel_start = -1;
+		sel_end = -1;
+		echo(character);
 		nv_form_input_event e(this);
 		e.character = character;
 		event.fire(e);
-		if (!silent && prevselect) speak(highlight_unselect_speech_text, false);
-		if (@suggestion != null) suggestion.update();
+		if (!silent && replaced) speak(highlight_unselect_speech_text, false);
+		update_suggestions();
 		return true;
 	}
 	bool edit(const string &in character) {
-		if (max_length > 0 && utf8length(text) > max_length)
-			return false;
-		if (text.length() == 0)
-			return false;
-		if (cursor >= text.length())
-			return false;
-		if (read_only == false) {
-			int size = utf8size(text.substr(cursor, 4));
-			text = text.substr(0, cursor) + character + text.substr(cursor + size);
-			cursor += character.length();
-		}
-		if (echo_flag == TEXTFLAG_ENTRY_CHARACTERS || echo_flag == TEXTFLAG_ENTRY_CHARACTERS_WORDS)
-			speak(input_box_speak(find_appropriate_character(character)), true);
-		if (@suggestion != null) suggestion.update();
-		if (nvform_word_separators .find(character) > -1 && (echo_flag == TEXTFLAG_ENTRY_WORDS || echo_flag == TEXTFLAG_ENTRY_CHARACTERS_WORDS)) {
-			int temp_position = cursor - 1;
-			while (temp_position > 0 && (temp_position >= text.length() || nvform_word_separators .find(text[temp_position - 1]) < 0))
-				temp_position--;
-			speak(read_word_from_position(temp_position), echo_flag != TEXTFLAG_ENTRY_CHARACTERS_WORDS);
-		}
+		if (read_only || character == "") return false;
+		validate_positions();
+		if (has_selection || cursor >= int(text.length()) || text[cursor] == "\n")
+			return add(character);
+		int size = utf8size(text.substr(cursor, 4));
+		text = text.substr(0, cursor) + character + text.substr(cursor + size);
+		cursor += character.length();
+		echo(character);
 		nv_form_input_event e(this);
 		e.character = character;
 		event.fire(e);
+		update_suggestions();
 		return true;
+	}
+	void echo(const string &in character) {
+		if (echo_flag == TEXTFLAG_ENTRY_CHARACTERS || echo_flag == TEXTFLAG_ENTRY_CHARACTERS_WORDS)
+			speak(input_box_speak(find_appropriate_character(character)));
+		if (nvform_word_separators.find(character) < 0 || (echo_flag != TEXTFLAG_ENTRY_WORDS && echo_flag != TEXTFLAG_ENTRY_CHARACTERS_WORDS))
+			return;
+		int end = cursor - character.length();
+		int start = end;
+		while (start > 0 && !is_separator(start - 1)) start--;
+		if (end > start)
+			speak(get_masked_text(text.substr(start, end - start)), echo_flag != TEXTFLAG_ENTRY_CHARACTERS_WORDS);
+	}
+	void update_suggestions() {
+		if (@suggestion == null || password_mask != "") return;
+		suggestion.update();
 	}
 	string input_box_speak(const string &in character) {
 		return input_box_speak(character, false);
@@ -309,89 +340,68 @@ class nv_form_input: nv_form_control {
 		else
 			return password_mask;
 	}
+	string describe_text(const string &in value) {
+		if (value == "") return "blank";
+		uint length = utf8length(value);
+		if (length == 1) return input_box_speak(find_appropriate_character(value), true).trim_whitespace();
+		if (password_mask != "" || value.length() >= 1024) return length + " characters";
+		return value;
+	}
+	void speak_character() {
+		if (cursor >= int(text.length()))
+			speak("Blank");
+		else
+			speak(input_box_speak(find_appropriate_character(text.substr(cursor, 4)), true), true);
+	}
 	void move_left() {
 		sel_start = -1;
 		sel_end = -1;
 		cursor = utf8prev(text, cursor);
 		if (cursor < 0)
 			cursor = 0;
-		if (cursor >= text.length())
-			speak("Blank");
-		else
-			speak(input_box_speak(find_appropriate_character(text.substr(cursor, 4)), true), true);
+		speak_character();
 	}
 	void move_right() {
 		sel_start = -1;
 		sel_end = -1;
 		cursor = utf8next(text, cursor);
-		if (cursor > text.length())
+		if (cursor > int(text.length()))
 			cursor = text.length();
-		if (cursor >= text.length())
-			speak("Blank");
-		else
-			speak(input_box_speak(find_appropriate_character(text.substr(cursor, 4)), true), true);
+		speak_character();
 	}
 	void add_new_line() {
 		if (!multiline)
 			return;
 		add("\n");
-		if (echo_flag != TEXTFLAG_ENTRY_NONE)
-			speak("New Line", true);
 	}
 	int current_line_start_position(bool word = false) {
 		if (text == "")
 			return -1;
-		int i = cursor;
-		while (i<text.length() and word and i >= 0 and nvform_word_separators .find(text[i]) > -1)
-			i--;
-		for (i; i > -1; i--) {
-			if (i >= text.length() || i == cursor && !word && text[cursor] == "\n")
-				continue;
-			if (i <= 0) {
-				if (i == 0 && text[i] == "\n")
-					return i + 1;
-				else
-					return i;
-			} else if (!word && text[i] == "\n" || (word && nvform_word_separators .find(text[i]) > -1))
-				return i + 1;
-		}
-		return 0;
+		if (!word) return find_line_start(cursor);
+		int position = cursor;
+		while (position > 0 && !is_separator(position - 1)) position--;
+		return position;
 	}
 	string read_line(int position) {
-		string temp = "";
 		if (position < 0) position = 0;
-		for (int counter = position; counter < text.length(); counter++) {
-			if (text[counter] != "\n")
-				temp += text[counter];
-			else
-				break;
-		}
-		if (temp == "")
+		if (position > int(text.length())) position = text.length();
+		string line = text.substr(position, find_line_end(position) - position);
+		if (line == "")
 			return "Blank";
-		return get_masked_text(temp);
+		return get_masked_text(line);
 	}
 	void line_start() {
-		if (cursor == 0) {
-			if (text != "")
-				speak(input_box_speak(find_appropriate_character(text.substr(0, 4)), true));
-			else
-				speak("Blank");
-			return;
-		}
-		int line_start = current_line_start_position();
-		if (line_start < text.length()) {
-			cursor = line_start;
-			speak(input_box_speak(find_appropriate_character(text.substr(cursor, 4)), true));
-		}
 		sel_start = -1;
 		sel_end = -1;
+		if (text == "") {
+			speak("Blank");
+			return;
+		}
+		cursor = find_line_start(cursor);
+		speak_character();
 	}
 	void line_end() {
-		int i = cursor;
-		for (i = cursor; i <= text.length(); i++) {
-			if (i == text.length() or text[i] == "\n") break;
-		}
-		cursor = i;
+		cursor = find_line_end(cursor);
 		speak("Blank");
 		sel_start = -1;
 		sel_end = -1;
@@ -401,94 +411,39 @@ class nv_form_input: nv_form_control {
 			if (speak_selection_status) speak("Blank");
 			return;
 		}
+		int target = find_previous_word(cursor);
 		if (highlighting) {
-			if (cursor < 1)
-				return;
-			int pos = current_line_start_position(true);
-			while (cursor == pos) {
-				int tmp_cursor = cursor;
-				cursor = pos - 2;
-				pos = current_line_start_position(true);
-				cursor = tmp_cursor;
-			}
-			if (sel_start == -1 && sel_end == -1 || cursor == sel_start || cursor - 1 == sel_start) {
-				sel_start = pos;
-				if (sel_end == -1)
-					sel_end = cursor - 1;
-				string slt = text.substr(sel_start, cursor - sel_start);
-				if (speak_selection_status) speak_selected(slt);
-				else speak(get_masked_text(slt), true, (slt != "" ? null : tts_default_text_processing_callback));
-				cursor = sel_start;
-				return;
-			} else if (cursor == sel_end || cursor - 1 == sel_end) {
-				sel_end = pos - 1;
-				string slt = text.substr(pos, cursor - 1 - pos);
-				if (speak_selection_status) speak_selected(slt, true);
-				else speak(get_masked_text(slt), true, (slt != "" ? null : tts_default_text_processing_callback));
-				cursor = pos;
-				return;
-			}
-		}
-		if (cursor <= 0) {
-			string slt = read_word_from_position(0);
-			speak(slt, true, (slt != "" ? null : tts_default_text_processing_callback));
+			extend_selection(target, !speak_selection_status);
 			return;
 		}
-		int cur_word = current_line_start_position(true);
-		while (cursor == cur_word) {
-			int tmp_cursor = cursor;
-			cursor = cur_word - 2;
-			cur_word = current_line_start_position(true);
-			cursor = tmp_cursor;
-		}
-		cursor = cur_word;
-		string slt = read_word_from_position(cur_word);
-		speak(slt, true, (slt != "" ? null : tts_default_text_processing_callback));
+		unselect(true);
+		cursor = target;
+		speak_word();
 	}
 	void move_word_right(bool highlighting = false, bool speak_selection_status = true) {
-		if (text == "" || cursor < 0 || cursor >= text.length()) {
+		if (text == "") {
 			if (speak_selection_status) speak("Blank");
 			return;
 		}
-		bool found_boundary = nvform_word_separators .find(text[cursor]) > -1;
-		int new_word = -1;
-		for (uint i = cursor; i < text.length(); i++) {
-			if (nvform_word_separators .find(text[i]) > -1)
-				found_boundary = true;
-			else if (found_boundary && nvform_word_separators .find(text[i]) < 0) {
-				new_word = i;
-				break;
-			}
-		}
-		if (new_word == -1)
-			new_word = text.length();
-		//if(highlighting&&new_word>0)
-		//new_word-=1;
+		int target = find_next_word(cursor);
 		if (highlighting) {
-			if (sel_start == -1 && sel_end == -1 || cursor == sel_end || cursor - 1 == sel_end) {
-				if (sel_start == -1)
-					sel_start = cursor;
-				sel_end = new_word - 1;
-				string slt = text.substr(cursor, new_word - cursor);
-				if (speak_selection_status) speak_selected(slt);
-				else speak(get_masked_text(slt), true, (slt != "" ? null : tts_default_text_processing_callback));
-				cursor = new_word;
-				return;
-			} else if (cursor == sel_start || cursor - 1 == sel_start) {
-				string slt = text.substr(sel_start, new_word - sel_start);
-				if (speak_selection_status) speak_selected(slt, true);
-				else speak(get_masked_text(slt), true, (slt != "" ? null : tts_default_text_processing_callback));
-				sel_start = new_word;
-				cursor = new_word;
-				return;
-			}
+			extend_selection(target, !speak_selection_status);
+			return;
 		}
-		cursor = new_word;
-		if (cursor < text.length()) {
-			string slt = read_word_from_position(cursor);
-			speak(slt, true, (slt != "" ? null : tts_default_text_processing_callback));
-		} else
+		unselect(true);
+		cursor = target;
+		speak_word();
+	}
+	void speak_word() {
+		if (cursor >= int(text.length())) {
 			speak("Blank");
+			return;
+		}
+		string word = password_mask != "" ? "" : read_word_from_position(cursor);
+		if (word == "")
+			speak_character();
+		else
+			speak(word, true, null);
 	}
 	void field_start() {
 		cursor = 0;
@@ -498,186 +453,103 @@ class nv_form_input: nv_form_control {
 			speak("Blank", true);
 			return;
 		}
-		string slt = read_line(0);
-		speak(slt, true, (slt != "" ? null : tts_default_text_processing_callback));
+		if (multiline) {
+			string slt = read_line(0);
+			speak(slt, true, (slt != "" ? null : tts_default_text_processing_callback));
+		} else
+			speak_character();
 	}
 	void field_end() {
 		sel_start = -1;
 		sel_end = -1;
-		if (text.length() == 0) {
+		cursor = text.length();
+		if (text.length() == 0 || !multiline) {
 			speak("Blank", true);
 			return;
 		}
-		cursor = text.length();
-		int line_start = current_line_start_position();
-		string slt = read_line(line_start);
+		string slt = read_line(find_line_start(cursor));
 		speak(slt, true, (slt != "" ? null : tts_default_text_processing_callback));
 	}
 	string read_word_from_position(int position) {
-		if (text == "")
+		if (text == "" || position < 0 || position >= int(text.length()))
 			return "";
-		int word_end = 0;
-		for (int counter = position; counter < text.length(); counter++) {
-			if (word_end < 1 && (nvform_word_separators .find(text[counter]) > -1 || text[counter] == "\n"))
-				word_end = counter;
-			else if (word_end > 0 && (nvform_word_separators .find(text[counter]) < 0) && (text[counter] != "\n")) {
-				word_end = counter;
-				break;
-			}
+		int end = position;
+		while (end < int(text.length()) && !is_separator(end)) end++;
+		return get_masked_text(text.substr(position, end - position));
+	}
+	void extend_selection(int target, bool silent = false) {
+		validate_positions();
+		int length = text.length();
+		if (target < 0) target = 0;
+		if (target > length) target = length;
+		if (target == cursor) return;
+		int anchor = cursor;
+		if (has_selection) anchor = cursor <= sel_start ? sel_end + 1 : sel_start;
+		int previous = cursor;
+		cursor = target;
+		if (cursor == anchor) {
+			sel_start = -1;
+			sel_end = -1;
+		} else {
+			sel_start = cursor < anchor ? cursor : anchor;
+			sel_end = (cursor > anchor ? cursor : anchor) - 1;
 		}
-		return get_masked_text(text.substr(position, word_end - position));
+		if (silent) return;
+		if ((previous < anchor && target > anchor) || (previous > anchor && target < anchor)) {
+			speak_range(previous, anchor, true, true);
+			speak_range(anchor, target, false, false);
+			return;
+		}
+		int previous_distance = previous > anchor ? previous - anchor : anchor - previous;
+		int target_distance = target > anchor ? target - anchor : anchor - target;
+		speak_range(previous, target, target_distance < previous_distance, true);
+	}
+	void speak_range(int from, int to, bool unselect, bool interrupt) {
+		if (from == to) return;
+		int start = from < to ? from : to;
+		int end = from < to ? to : from;
+		speak_selected(text.substr(start, end - start), unselect, interrupt);
 	}
 	void highlight_to_field_start() {
-		if (cursor == 0)
-			return;
-		sel_start = 0;
-		sel_end = cursor;
-		cursor = 0;
-		speak_selected(text.substr(0, sel_end + 1));
+		extend_selection(0);
 	}
 	void highlight_to_field_end() {
-		if (cursor >= text.length())
-			return;
-		sel_start = cursor;
-		sel_end = text.length() - 1;
-		cursor = text.length();
-		speak_selected(text.substr(sel_start));
+		extend_selection(text.length());
 	}
 	void highlight_to_word_start() {
+		move_word_left(true);
 	}
 	void highlight_to_word_end() {
+		move_word_right(true);
 	}
 	void highlight_to_line_start(bool continuation = false) {
-		if (cursor == 0)
-			return;
-		if (cursor == text.length())
-			cursor -= 1;
-		if (cursor == text.length() - 1 && cursor >= 0 && text[cursor] == "\n" && !continuation)
-			cursor -= 1;
-		int line_start = current_line_start_position();
-		if (cursor <= line_start) {
-			if (!continuation)
-				return;
-			else {
-				int tmp_cursor = cursor;
-				cursor = line_start - 1;
-				line_start = current_line_start_position();
-				if (line_start < 0) line_start = 0;
-				cursor = tmp_cursor;
-			}
-		}
-		if (sel_start < 0 || cursor == sel_start || cursor - 1 == sel_start) {
-			sel_start = line_start;
-			if (!continuation || sel_end == -1)
-				sel_end = cursor;
-			speak_selected(text.substr(sel_start, cursor - sel_start));
-			cursor = sel_start;
-		} else if (cursor == sel_end || cursor - 1 == sel_end) {
-			sel_end = line_start;
-			speak_selected(text.substr(sel_end, cursor - sel_end), true);
-			cursor = sel_end;
-		}
-		if (sel_end < sel_start) {
-			sel_start = -1;
-			sel_end = -1;
-		}
+		extend_selection(continuation ? find_previous_line(cursor) : find_line_start(cursor));
 	}
 	void highlight_to_line_end(bool continuation = false) {
-		if (text == "" || cursor >= int(text.length()) - 1)
-			return;
-		int line_end = cursor + 1;
-		for (line_end; line_end < text.length(); line_end++) {
-			if (text[line_end] == "\r" || text[line_end] == "\n")
-				break;
-		}
-		if (sel_end == line_end) {
-			if (!continuation || line_end >= int(text.length()))
-				return;
-			else {
-				if (text[line_end] == "\r") line_end += 2;
-				else if (text[line_end] == "\n") line_end += 1;
-				for (line_end; line_end < text.length(); line_end++) {
-					if (text[line_end] == "\r" || text[line_end] == "\n")
-						break;
-				}
-			}
-		}
-		//line_end-=1;
-		if (sel_start < 0 || cursor == sel_end || cursor - 1 == sel_end) {
-			if (!continuation or sel_start == -1)
-				sel_start = cursor;
-			sel_end = line_end;
-			int old_cursor = cursor;
-			cursor = line_end;
-			speak_selected(text.substr(old_cursor, sel_end - old_cursor));
-		} else if (cursor == sel_start || cursor - 1 == sel_start) {
-			sel_start = line_end;
-			speak_selected(text.substr(cursor, line_end - cursor), true);
-			cursor = line_end;
-		}
-		if (sel_end < sel_start) {
-			sel_start = -1;
-			sel_end = -1;
-		}
+		extend_selection(continuation ? find_next_line(cursor) : find_line_end(cursor));
 	}
 	void highlight_left() {
-		if (cursor <= 0)
-			return;
-		if (sel_start < 0) {
-			sel_start = utf8prev(text, cursor);
-			sel_end = sel_start;
-			cursor = sel_start;
-			speak(input_box_speak(find_appropriate_character(text.substr(sel_start, 4)), true) + " " + highlight_select_speech_text, true);
-			return;
-		}
-		int old_cursor = cursor;
-		if (cursor > 0)
-			cursor = utf8prev(text, cursor);
-		if ((cursor == sel_start || old_cursor == sel_start) && cursor != sel_end && sel_start > 0) {
-			sel_start = utf8prev(text, sel_start);
-			speak(input_box_speak(find_appropriate_character(text.substr(sel_start, 4)), true) + " " + highlight_select_speech_text, true);
-		} else if (cursor == sel_end || (old_cursor == sel_end) && sel_end > 0 && sel_end < text.length()) {
-			speak(input_box_speak(find_appropriate_character(text.substr(sel_end, 4)), true) + " " + highlight_unselect_speech_text, true);
-			sel_end = utf8prev(text, sel_end);
-		}
-		if (sel_end < sel_start && sel_start > -1) {
-			sel_start = -1;
-			sel_end = -1;
-		}
+		if (cursor <= 0) return;
+		extend_selection(utf8prev(text, cursor));
 	}
 	void highlight_right() {
-		if (text == "")
-			return;
-		if (sel_start == -1 && sel_end == -1 && cursor < text.length()) {
-			sel_start = cursor;
-			sel_end = cursor;
-			speak(input_box_speak(find_appropriate_character(text.substr(sel_start, 4)), true) + " " + highlight_select_speech_text, true);
-			cursor = utf8next(text, cursor);
-			return;
-		}
-		if (utf8prev(text, cursor) == sel_end && cursor < text.length()) {
-			sel_end = utf8next(text, sel_end);
-			speak(input_box_speak(find_appropriate_character(text.substr(sel_end, 4)), true) + " " + highlight_select_speech_text, true);
-		} else if ((cursor == sel_start || utf8prev(text, cursor) == sel_start) && cursor <= text.length() && sel_start > -1) {
-			speak(input_box_speak(find_appropriate_character(text.substr(sel_start, 4)), true) + " " + highlight_unselect_speech_text, true);
-			sel_start = utf8next(text, sel_start);
-		}
-		if (cursor < text.length())
-			cursor = utf8next(text, cursor);
-		if (sel_end < sel_start && sel_start > -1) {
-			sel_start = -1;
-			sel_end = -1;
-		}
+		if (cursor >= int(text.length())) return;
+		extend_selection(utf8next(text, cursor));
 	}
 	void highlight_up() {
-		highlight_to_line_start(true);
+		if (!multiline)
+			highlight_to_field_start();
+		else
+			highlight_to_line_start(true);
 	}
 	void highlight_down() {
-		highlight_to_line_end(true);
+		if (!multiline)
+			highlight_to_field_end();
+		else
+			highlight_to_line_end(true);
 	}
 	void highlight_by_position(int start, int end) {
-		sel_start = start;
-		sel_end = end;
+		select(start, end);
 	}
 	bool unselect(bool silent = false) {
 		if (sel_start > -1 && sel_end > -1) {
@@ -690,48 +562,29 @@ class nv_form_input: nv_form_control {
 	}
 	void next_line() {
 		bool prevsl = unselect(true);
+		int length = text.length();
 		if (!multiline) {
-			cursor = text.length();
+			cursor = length;
 			speak(read_line(0));
-			if (prevsl) speak(highlight_unselect_speech_text, false);
-			return;
+		} else {
+			int end = find_line_end(cursor);
+			if (end >= length) {
+				cursor = length;
+				speak(read_line(find_line_start(cursor)));
+			} else {
+				cursor = end + 1;
+				speak(read_line(cursor));
+			}
 		}
-		int line_start = current_line_start_position();
-		if (line_start == text.length() || line_start < 0) {
-			speak("blank");
-			if (line_start == text.length())
-				cursor = text.length();
-			if (prevsl) speak(highlight_unselect_speech_text, false);
-			return;
-		}
-		for (int counter = cursor; counter < text.length(); counter++) {
-			if (text[counter] != "\n")
-				continue;
-			cursor = counter + 1;
-			speak(read_line(cursor));
-			if (prevsl) speak(highlight_unselect_speech_text, false);
-			return;
-		}
-		speak(read_line(line_start));
-		cursor = text.length();
 		if (prevsl) speak(highlight_unselect_speech_text, false);
 	}
 	void previous_line() {
 		bool prevsl = unselect(true);
-		int line_start = current_line_start_position();
-		if (line_start <= 0 || !multiline) {
+		int start = find_line_start(cursor);
+		if (!multiline || start == 0)
 			cursor = 0;
-			if (text == "")
-				speak("blank");
-			else
-				speak(read_line(0));
-			if (prevsl) speak(highlight_unselect_speech_text, false);
-			return;
-		}
-		cursor = line_start - 1;
-		cursor = current_line_start_position();
-		if (cursor < 0)
-			cursor = 0;
+		else
+			cursor = find_line_start(start - 1);
 		speak(read_line(cursor));
 		if (prevsl) speak(highlight_unselect_speech_text, false);
 	}
@@ -744,7 +597,7 @@ class nv_form_input: nv_form_control {
 		}
 		sel_start = 0;
 		sel_end = text.length() - 1;
-		cursor = 0;
+		cursor = text.length();
 		speak_selected(text);
 	}
 	string get_masked_text(const string &in t) {
@@ -755,25 +608,21 @@ class nv_form_input: nv_form_control {
 		if (len == 1) return password_mask;
 		return len + " characters";
 	}
-	protected void speak_selected(const string &in selection, bool unselect = false) {
+	protected void speak_selected(const string &in selection, bool unselect = false, bool interrupt = true) {
 		string speech_text = unselect ? highlight_unselect_speech_text : highlight_select_speech_text;
-		if (selection.length() >= 1024 || password_mask != "")
-			speak(utf8length(selection) + " characters " + speech_text);
-		else
-			speak(selection + " " + speech_text, true);
+		speak(describe_text(selection) + " " + speech_text, interrupt);
 	}
 	void copy_highlighted() {
 		if (password_mask != "") {
 			speak("Cannot copy from a protected field.", true);
 			return;
 		}
-		if (sel_start < 0 || sel_end < 0 || sel_start > sel_end) {
+		if (!has_selection) {
 			speak("Nothing selected", true);
 			return;
 		}
-		string copy_text = text.substr(0, sel_end + 1).substr(sel_start);
+		clipboard_set_text(selected_text);
 		speak("Copied to clipboard", true);
-		clipboard_set_text(copy_text);
 	}
 	void cut_highlighted() {
 		if (read_only == true) {
@@ -784,31 +633,27 @@ class nv_form_input: nv_form_control {
 			speak("Cannot cut from a protected field.", true);
 			return;
 		}
-		if (sel_start < 0 || sel_end < 0 || sel_start > sel_end) {
+		if (!has_selection) {
 			speak("Nothing selected", true);
 			return;
 		}
-		string copy_text = text.substr(0, sel_end + 1).substr(sel_start);
+		clipboard_set_text(selected_text);
 		speak("Cut Selected", true);
-		clipboard_set_text(copy_text);
 		delete_highlighted(0, false);
 	}
 	void paste_text() {
 		if (read_only) return;
-		string paste = clipboard_get_text();
+		validate_positions();
+		string paste = clipboard_get_text().replace("\r\n", "\n", true).replace("\r", "\n", true);
+		if (!multiline) {
+			int line_break = paste.find("\n");
+			if (line_break > -1) paste = paste.substr(0, line_break);
+		}
 		if (paste == "") {
 			speak("clipboard empty", true);
 			return;
 		}
-		string[]@ paste_single = paste.split("\r\n", false);
-		if (!multiline)
-			paste = paste_single.length() > 0 ? paste_single[0] : "";
-		paste = paste.replace("\r", "", true);
-		if (paste == "") {
-			speak("clipboard empty", true);
-			return;
-		}
-		int selected_length = (sel_start > -1 && sel_end > -1 && sel_start <= sel_end) ? utf8length(text.substr(sel_start, sel_end - sel_start + 1)) : 0;
+		int selected_length = has_selection ? utf8length(selected_text) : 0;
 		if (max_length > 0 && (utf8length(text) + utf8length(paste) - selected_length) > max_length) {
 			speak("clipboard data can't fit", true);
 			return;
@@ -818,9 +663,9 @@ class nv_form_input: nv_form_control {
 			return;
 		}
 		string new_text = text;
-		if (sel_start > -1 && sel_end > -1) {
+		if (has_selection) {
 			cursor = sel_start;
-			new_text = text.substr(0, cursor) + text.substr(sel_end + 1);
+			new_text = text.substr(0, sel_start) + text.substr(sel_end + 1);
 			sel_start = -1;
 			sel_end = -1;
 		}
@@ -830,15 +675,41 @@ class nv_form_input: nv_form_control {
 		nv_form_input_event e(this);
 		e.character = paste;
 		event.fire(e);
-		if (@suggestion != null) suggestion.update();
+		update_suggestions();
 	}
 	void delete_word_left() {
-		move_word_left(true, false);
-		delete_highlighted(0, false);
+		if (read_only || text == "") return;
+		validate_positions();
+		if (has_selection) {
+			delete_highlighted(0);
+			return;
+		}
+		int target = find_previous_word(cursor);
+		if (target < cursor) delete_range(target, cursor, true);
 	}
 	void delete_word_right() {
-		move_word_right(true, false);
-		delete_highlighted(0, false);
+		if (read_only || text == "") return;
+		validate_positions();
+		if (has_selection) {
+			delete_highlighted(1);
+			return;
+		}
+		int target = find_next_word(cursor);
+		if (target > cursor) delete_range(cursor, target, true);
+	}
+	void delete_range(int start, int end, bool speak_deleted) {
+		string removed = text.substr(start, end - start);
+		text = text.substr(0, start) + text.substr(end);
+		cursor = start;
+		sel_start = -1;
+		sel_end = -1;
+		if (speak_deleted)
+			speak(describe_text(removed) + (delete_speech_text != "" ? " " + delete_speech_text : ""), true);
+		nv_form_input_event e(this);
+		e.character = removed;
+		e.deleted = true;
+		event.fire(e);
+		update_suggestions();
 	}
 	void delete_highlighted() {
 		delete_highlighted(0);
@@ -849,62 +720,46 @@ class nv_form_input: nv_form_control {
 	void delete_highlighted(int from_start, bool speak_deleted) {
 		if ((text == "") || (read_only == true))
 			return;
-		if (sel_start > -1 && sel_end > -1 && sel_start <= sel_end) {
-			cursor = sel_start;
-			text = text.substr(0, cursor) + text.substr(sel_end + 1);
-			sel_start = -1;
-			sel_end = -1;
+		validate_positions();
+		if (has_selection) {
 			if (speak_deleted)
 				speak("selection deleted");
-			nv_form_input_event e(this);
-			e.deleted = true;
-			event.fire(e);
-			if (@suggestion != null) suggestion.update();
-			return;
-		} else if (from_start == 0 && cursor > 0) {
-			int old_cursor = cursor;
-			cursor = utf8prev(text, cursor);
-			if (cursor >= text.length())
-				cursor = text.length() - 1;
-			string deltext = text.substr(cursor, 4);
-			if (speak_deleted)
-				speak(input_box_speak(find_appropriate_character(deltext), true) + (delete_speech_text != "" ? " " + delete_speech_text : ""), true);
-			text = text.substr(0, cursor) + text.substr(old_cursor);
-			nv_form_input_event e(this);
-			e.character = deltext;
-			e.deleted = true;
-			event.fire(e);
-			if (@suggestion != null) suggestion.update();
-		} else if (from_start == 1 && cursor < text.length()) {
-			string del_char = text.substr(cursor, 4);
-			text = text.substr(0, cursor) + text.substr(cursor + utf8size(del_char));
-			if (speak_deleted)
-				speak(input_box_speak(find_appropriate_character(del_char), true), true);
-			nv_form_input_event e(this);
-			e.character = del_char;
-			e.deleted = true;
-			event.fire(e);
-			if (@suggestion != null) suggestion.update();
-		}
+			delete_range(sel_start, sel_end + 1, false);
+		} else if (from_start == 0 && cursor > 0)
+			delete_range(utf8prev(text, cursor), cursor, speak_deleted);
+		else if (from_start == 1 && cursor < int(text.length()))
+			delete_range(cursor, utf8next(text, cursor), speak_deleted);
 	}
 	bool select(int sel_start = -1, int sel_end = -1) {
+		int length = text.length();
+		if (sel_start < 0) {
+			this.sel_start = -1;
+			this.sel_end = -1;
+			return true;
+		}
+		if (sel_start >= length) return false;
+		if (sel_end < 0 || sel_end >= length)
+			sel_end = length - 1;
+		if (sel_end < sel_start) return false;
 		this.sel_start = sel_start;
-		if (sel_start >= 0 && sel_end < 0)
-			sel_end = this.text.length() - 1;
 		this.sel_end = sel_end;
 		return true;
 	}
 	int get_line_number() {
 		int ln = 1;
-		for (uint i = 0; i < text.length() and i < cursor; i++) {
+		for (int i = 0; i < int(text.length()) and i < cursor; i++) {
 			if (text[i] == "\n") ln++;
 		}
 		return ln;
 	}
 	int get_line_column() {
+		validate_positions();
 		int col = 1;
-		for (int i = cursor - 1; i >= 0 and i < text.length(); i--) {
-			if (text[i] == "\n") break;
+		int position = find_line_start(cursor);
+		while (position < cursor) {
+			int next = utf8next(text, position);
+			if (next <= position) break;
+			position = next;
 			col++;
 		}
 		return col;
@@ -915,7 +770,6 @@ class nv_form_input: nv_form_control {
 			if (!silent) speak("line number out of range");
 			return false;
 		}
-		if (col < 1) col = 1;
 		int line_start = 0;
 		if (line > 1) {
 			int break_before = nv_string_contains(text, "\n", line - 1);
@@ -925,16 +779,17 @@ class nv_form_input: nv_form_control {
 			}
 			line_start = break_before + 1;
 		}
-		int break_after = nv_string_contains(text, "\n", line);
-		int line_end = break_after > -1 ? break_after : text.length();
-		int max_col = line_end - line_start;
-		if (col > max_col) col = max_col;
-		if (col < 1) col = 1;
-		cursor = line_start + col - 1;
-		if (cursor > int(text.length())) cursor = text.length();
+		int line_end = find_line_end(line_start);
+		cursor = line_start;
+		for (int i = 1; i < col && cursor < line_end; i++) {
+			int next = utf8next(text, cursor);
+			if (next <= cursor) break;
+			cursor = next;
+		}
+		if (cursor > line_end) cursor = line_end;
 		sel_start = -1;
 		sel_end = -1;
-		if (!silent) speak(read_line(current_line_start_position()), false);
+		if (!silent) speak(read_line(find_line_start(cursor)), false);
 		return true;
 	}
 	string get_default_text() const property {
@@ -945,14 +800,19 @@ class nv_form_input: nv_form_control {
 			v = v.substr(0, utf8prev(v, v.length()));
 		__default_text__ = v;
 		text = v;
+		validate_positions();
 	}
 	bool search(const string &in text, int dir = 1, bool silent = false) {
+		validate_positions();
 		string wrapped = "";
-		int idx = dir > 0 ? this.text.find(text, cursor + dir) : this.text.rfind(text, cursor + dir);
+		int idx = -1;
+		if (dir > 0)
+			idx = this.text.find(text, cursor + 1);
+		else if (cursor > 0)
+			idx = this.text.rfind(text, cursor - 1);
 		if (idx < 0) {
-			int tmp_cursor = dir > 0 ? 0 : this.text.length() - 1;
 			wrapped = dir > 0 ? "wrapped to top" : "wrapped to bottom";
-			idx = dir > 0 ? this.text.find(text, tmp_cursor) : this.text.rfind(text, tmp_cursor);
+			idx = dir > 0 ? this.text.find(text, 0) : this.text.rfind(text, -1);
 		}
 		if (idx < 0) {
 			if (!silent) speak("nothing found");
@@ -967,7 +827,7 @@ class nv_form_input: nv_form_control {
 		sel_end = -1;
 		if (!silent) {
 			if (wrapped != "") speak(wrapped);
-			speak(read_line(current_line_start_position()), wrapped == "");
+			speak(read_line(find_line_start(cursor)), wrapped == "");
 		}
 		return true;
 	}
@@ -999,11 +859,11 @@ class nv_form_input: nv_form_control {
 		}
 		return (disallowed_chars.find(char) > -1 && !use_only_disallowed_chars) || (disallowed_chars.find(char) < 0 && use_only_disallowed_chars);
 	}
-	protected uint utf8length(const string &in txt) const {
+	uint utf8length(const string &in txt) const {
 		if (txt.empty()) return 0;
 		uint length = txt.length(), count = 0;
 		for (uint cursor = 0; length > cursor; count ++)
-		cursor = utf8next(txt, cursor);
+			cursor = utf8next(txt, cursor);
 		return count;
 	}
 }
