@@ -4,7 +4,7 @@ Returns the next or previous control relative to the current position. It skips 
 `nv_form_control@find_next_control(bool next = true, bool wrap = true) const`
 
 ## Arguments:
-- `bool next = true`: Should this method find next or previous control?
+- `bool next = true`: Should this method find the next or previous control?
 - `bool wrap = true`: Will the control position wrap around?
 
 ## Returns:

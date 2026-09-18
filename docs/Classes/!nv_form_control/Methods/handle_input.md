@@ -1,5 +1,5 @@
 # handle_input
-Handles input, custom keys, of the control.
+Handles input, custom key bindings, touch gestures, of the control.
 
 `bool handle_input();`
 
@@ -8,6 +8,7 @@ Handles input, custom keys, of the control.
 
 ## Remarks:
 When defining this method, the control should execute any necessary actions, like checking specific keys for the control, and always return `true` if any of execution is carried.
+
 This method should return `false` only when none of the key the user presses is used or triggered.
 
 For example:

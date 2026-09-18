@@ -1,5 +1,5 @@
 # NV Form
-NV Form (`nv_form`) is a new, redesigned auditory form written in and/or for [NVGT](https://nvgt.dev) scripting game engine. This is written to make audio form more modernized, now that the old form in NVGT is legacy.
+NV Form (`nv_form`) is a new, redesigned auditory form module written in and/or for [NVGT](https://nvgt.dev) scripting game engine. This is written to make audio form more modernized, now that the old form in NVGT is legacy.
 
 [Website](https://harrymkt.github.io/nv_form)
 

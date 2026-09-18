@@ -1,10 +1,16 @@
 # str
 A string representation of the control.
 
-`string get_str() property;`
+`string str;`
 
 ## Remarks:
 This property contains entire information of the control. For example, "Play music  check box  not checked".
+
+To modify this function, implement the following syntax:
+```NVGT
+string get_str() property {
+}
+```
 
 A default implementation respects the `form.speak_control_attributes_separately` property, and is defined like this:
 ```nvgt

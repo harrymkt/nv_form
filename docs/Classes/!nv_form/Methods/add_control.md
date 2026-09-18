@@ -14,4 +14,4 @@ Adds a new control into the form.
 `bool`: `true` on success, `false` on failure.
 
 ## Remarks:
-This method is useful if you make a child class of a control.
+This method is useful if you make a child class of a control, and is also used by all other `add_*` methods.

@@ -7,4 +7,4 @@ Retrieves more information of the control (if any).
 `string`: A string defining the information.
 
 ## Remarks:
-In form, this information is spoken last. If the `form.speak_control_attributes_separately` property is set to `true`, this information will be spoken separately. Most controls usually leave this method empty, i.e. unmodified.
+In form, this information is spoken at the last part of speech. If the `form.speak_control_attributes_separately` property is set to `true`, this information will be spoken separately. Most controls usually leave this method empty, i.e. unmodified.
