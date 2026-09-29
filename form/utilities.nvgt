@@ -190,16 +190,16 @@ class nv_search_for : nv_utility_form {
 		string current = "";
 		if (parent.nv_utility_form_data.exists("last_search")) parent.nv_utility_form_data.get("last_search", current);
 		string wmsg = "Search for Text";
-		string lnmsg = "Text to search";
+		string lnmsg = "Search term";
 		if (@ctrl_list != null || @ctrl_tree != null || @ctrl_tab != null)
 			wmsg = "Search for Item";
 		f.create_window(wmsg, false, true);
 		@f_text = f.add_input(lnmsg, "ln", current, "", 256);
 		f_text.select(0);
 		f_text.util_flags &= ~(NV_UTIL_GO_INDEX | NV_UTIL_SEARCH);
-		@f_next = f.add_button("find next", "next", true);
+		@f_next = f.add_button("Next search", "next", true);
 		@f_next.shortcut = nv_shortcut(KEY_N, alt = true);
-		@f_prev = f.add_button("find previous", "prev");
+		@f_prev = f.add_button("Previous search", "prev");
 		@f_prev.shortcut = nv_shortcut(KEY_P, alt = true);
 		@f_cancel = f.add_button("cancel", "cancel", false, true);
 		@f.background_callback = parent.background_callback;

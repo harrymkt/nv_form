@@ -13,8 +13,7 @@ Original copyright notice:
 You can run [test.nvgt](test.nvgt) to get to know all the features. Usually every feature gets added to it as soon as implemented. For more tests, view the [test directory](test).
 
 ## Notes
-- This module is a new and redesigned module, but some parts may have copied from the original auditory form.
-- This module is also a modified version of the original NV Form created by Ivan Soto, and is no longer compatible with the origin API due to conventional name changes.
+- This module is a modified version of the original NV Form created by Ivan Soto, and is no longer compatible with the origin API due to conventional name changes.
 - Unlike legacy modules, this module no longer uses error codes until a better solution is found. Currently only return values are used.
 - NV Form Module is object based, meaning every control is a class. This allows for customization.
 - Controls, functions, events, and shortcut handlers, are now completely different from the ones that you use in the legacy modules. Therefore, if you cannot find a specific function, enum value, or constant; you cannot use a functionality; or functionality is different, it may not actually be a bug.
@@ -29,12 +28,12 @@ We accept contributions as long as the established [contributions guidelines](.g
 [Documentation](https://harrymkt.github.io/nv_form/docs) for the form has been written, but this does not mean that it is complete. We appreciate any contributions regarding the documentation.
 
 ## Features
-NV Form module advertises the following features:
+NV Form module provides the following features:
 
 - Ease of Use: NV Form is easy to integrate, use, and make changes.
 - Form Controls: NV Form supports many controls out of the box, including buttons, check boxes, text fields, lists, sliders, progress bars, switches, context menus, suggestions, and more. Please see a list of available control types in the documentation.
 - Custom Controls: Add to or modify any control as you wish if it does not meet your requirements. Add custom controls by directly making child classes of specific controls you want, as well as extend and modify existing controls by directly making a child class of them. See nv_form_control Documentation.
-- Custom Form: Add to or otherwise modify the NV Form module by making a child class of `nv_form` to integrate your changes, custom logic, custom verifications and how controls are added, without ever directly touching the main NV Form module which would otherwise be painful especially if you have to copy and paste , and update all the time when the main NV Form module is updated.
+- Custom Form: Add to or otherwise modify the NV Form module by making a child class of `nv_form` to integrate your changes, custom logic, custom verifications and how controls are added, without ever directly touching the main NV Form module which would otherwise be painful especially if you have to copy and paste  and update all the time when the main NV Form module is updated.
 - Events: Make your projects more integrated by using events dispatched by the form's event dispatcher without having to modify controls, i.e. adding keyboard / navigation sounds.
 - Extensive Shortcuts: Utilize advanced shortcut combinations, key modifiers, multitap keys, all from just one shortcut manager.
 - Organized Forms: Make your project more clean and categorized by utilizing tab controls, known as child forms.

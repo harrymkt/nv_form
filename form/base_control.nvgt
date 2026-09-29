@@ -5,17 +5,17 @@ abstract class nv_form_control {
 	string id;
 	string description;
 	string help;
-	protected nv_shortcut@ __shortcut = null;
+	protected nv_shortcut@ __shortcut;
 	nv_form@parent;
 	bool speak_shortcut = true, autoactivate;
 	bool hidden, enabled = true;
 	uint util_flags = NV_UTIL_GO_INDEX | NV_UTIL_SEARCH;
-	nv_form_control_callback@ callback = null;
-	nv_form_control_callback@ help_callback = null;
+	nv_form_control_callback@ callback;
+	nv_form_control_callback@ help_callback;
 	nv_form_event_dispatcher event;
-	nv_form_context_menu@ menu = null;
-	nv_form_suggestion_manager@ suggestion = null;
-	touch_gesture_manager@ touch = null;
+	nv_form_context_menu@ menu;
+	nv_form_suggestion_manager@ suggestion;
+	touch_gesture_manager@ touch;
 	nv_form_control(const string &in caption, const string &in id, int type, nv_form@parent) {
 		this.caption = caption;
 		this.type = type;
@@ -71,10 +71,13 @@ abstract class nv_form_control {
 	void on_focus_gained_immediate() { }
 	void on_focus_gained() { }
 	void on_focus_lost() { }
-	void show_help() {
+	bool send_help_callback() {
 		bool ok = false;
 		if (@help_callback != null) ok = help_callback(this);
-		if (ok) return;
+		return ok;
+	}
+	void show_help() {
+		if (send_help_callback()) return;
 		if (help == "") return;
 		speak(help);
 	}
@@ -116,7 +119,7 @@ abstract class nv_form_control {
 	}
 	bool enable_go_line {
 		get const {
-			return util_flags & NV_UTIL_GO_INDEX != 0;
+			return (util_flags & NV_UTIL_GO_INDEX) != 0;
 		} set {
 			util_flags &= ~NV_UTIL_GO_INDEX;
 			if (value) util_flags |= NV_UTIL_GO_INDEX;
@@ -124,7 +127,7 @@ abstract class nv_form_control {
 	}
 	bool enable_search {
 		get const {
-			return util_flags & NV_UTIL_SEARCH != 0;
+			return (util_flags & NV_UTIL_SEARCH) != 0;
 		} set {
 			util_flags &= ~NV_UTIL_SEARCH;
 			if (value) util_flags |= NV_UTIL_SEARCH;

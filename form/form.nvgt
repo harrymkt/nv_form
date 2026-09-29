@@ -22,13 +22,13 @@ class nv_form {
 	protected int __keyboard_echo__ = nvform_keyboard_echo;
 	bool rely_on_nvform_echo = true;
 	string window_title;
-	bool speak_control_attributes_separately = false;
+	bool speak_control_attributes_separately;
 	protected int __tap_timeout__ = 200;
-	bool active = false;
-	nv_form_control@primary_control = null, cancel_control = null;
+	bool active;
+	nv_form_control@primary_control, cancel_control;
 	nv_form_callback@background_callback = default_nv_form_callback;
 	nv_shortcut_manager@ shortcut;
-	nv_form_event_handler@ default_event_handler = null;
+	nv_form_event_handler@ default_event_handler;
 	protected touch_gesture_manager@ touch;
 	nv_form() {
 		reset();
@@ -49,7 +49,7 @@ class nv_form {
 		if (rely_on_nvform_echo) return nvform_keyboard_echo;
 		return __keyboard_echo__;
 	}
-	void set_keyboard_echo(int echo, bool update = true) {
+	void set_keyboard_echo(int echo, bool update) {
 		__keyboard_echo__ = echo;
 		if (update) {
 			foreach (nv_form_control@ l: controls) {
@@ -58,6 +58,9 @@ class nv_form {
 				ca.echo_flag = echo;
 			}
 		}
+	}
+	void set_keyboard_echo(int echo) property {
+		set_keyboard_echo(echo, true);
 	}
 	int tap_timeout {
 		get const {
