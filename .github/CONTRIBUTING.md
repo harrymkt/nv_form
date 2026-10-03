@@ -35,7 +35,7 @@ alert("hello","testing");
 ### Overview
 Documentation generator takes `.md` and `.nvgt` source files and turns them into HTML documentation and structured Markdown files with TOML front matter.
 
-### Filenames and Folders
+### Rules of Filenames and Folders
 - Put `!` at the start of a filename if you want it to sort near the top. The `!` is removed from the output filename.
 - Add `+` to the end of a filename stem to use the first line of the file as its display title. The `+` is removed from the output filename.
 - Put `@` anywhere in a filename stem to make it a standalone root document. It gets its own HTML page and a link is added to the main document.

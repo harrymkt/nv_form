@@ -13,20 +13,21 @@ class nv_form_progress_bar: nv_form_control {
 		dictionary touches = {{"swipe_up1f", KEY_UP}, {"swipe_down1f", KEY_DOWN}};
 		touch.add_touch_interface(touch_keyboard_interface(touch, touches));
 	}
-	private sound@ generate_progress_tone(double duration = 0.2, double min_freq = 220.0, double max_freq = 880.0) {
+	private sound@ generate_progress_tone(double ms = 50) {
 		#if_not plugin_legacy_sound
 		tone_synth@synth = tone_synth();
 		if (@synth == null) return null;
-		double percent = percentage / 100.0;
+		double percent = percentage;
 		if (percent < 0.0) percent = 0.0;
-		if (percent > 1.0) percent = 1.0;
-		double freq = min_freq + (max_freq - min_freq) * percent;
+		if (percent > 100.0) percent = 100.0;
+		double freq = 110 * 2 ** (percent / 25);
 		synth.reset();
-		synth.waveform_type = 3;
+		synth.set_edge_fades(1, 1);
+		synth.waveform_type = 4;
 		synth.allow_silent_output = false;
-		synth.volume = 0.8;
+		synth.volume = -6;
 		synth.pan = 0.0;
-		if (!synth.freq(freq, duration)) return null;
+		if (!synth.freq_ms(freq, ms)) return null;
 		return synth.write_wave_sound();
 		#endif
 		#if plugin_legacy_sound

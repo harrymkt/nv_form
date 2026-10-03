@@ -1,13 +1,14 @@
 # add_treeview
 Creates a new tree view and adds it to the form.
 
-`nv_form_treeview@add_treeview(const string &in caption, const string &in id = "", nv_form_tree_node@[] nodes = {}, int position = -1);`
+`nv_form_treeview@add_treeview(const string &in caption, const string &in id = "", nv_form_tree_node@[] nodes = {}, int position = -1, bool speak_level = true);`
 
 ## Arguments:
 - `const string &in caption`: The label to associate with the tree.
 - `const string &in id = ""`: The ID.
 - `nv_form_tree_node@[] nodes = {}`: The initial top level nodes.
 - `int position = -1`: The position to insert at.
+- `bool speak_level = true`: Whether or not the level (i.e. level {x}) should be spoken.
 
 ## Returns:
 `nv_form_treeview@`: The tree on success, null otherwise.

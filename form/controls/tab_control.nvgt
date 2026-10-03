@@ -15,8 +15,8 @@ class nv_form_tab_control: nv_form_control {
 		if (pages.length() > 0) this.tab_pages.extend(pages);
 		@touch = touch_gesture_manager();
 		dictionary touches = {
-			{"swipe_up1f", KEY_LEFT},
-			{"swipe_down1f", KEY_RIGHT},
+			{"swipe_up1f", KEY_UP},
+			{"swipe_down1f", KEY_DOWN},
 			{"swipe_up2f", KEY_HOME},
 			{"swipe_down2f", KEY_END}
 		};
@@ -106,6 +106,7 @@ class nv_form_tab_control: nv_form_control {
 		if (@parent == null || @parent.current_control != @this) return false;
 		if (@touch != null) touch.monitor();
 		if (key_down(KEY_LCTRL) || key_down(KEY_RCTRL)) {
+			if (is_waiting_form) return true;
 			if (position > -1 && position < tab_pages.length()) {
 				if (key_repeating(KEY_TAB)) {
 					bool next = !(key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT));
@@ -179,12 +180,12 @@ class nv_form_tab_control: nv_form_control {
 				}
 			}
 		}
-		if (key_repeating(KEY_LEFT) || key_repeating(KEY_UP)) {
+		if (key_repeating(KEY_UP)) {
 			bool nav = navigate(false);
 			if (nav && @focused_item != null) speak(speak_tab_item(focused_item));
 			return true;
 		}
-		if (key_repeating(KEY_RIGHT) || key_repeating(KEY_DOWN)) {
+		if (key_repeating(KEY_DOWN)) {
 			bool nav = navigate(true);
 			if (nav && @focused_item != null) speak(speak_tab_item(focused_item));
 			return true;
