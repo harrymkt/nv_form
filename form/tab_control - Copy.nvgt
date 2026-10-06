@@ -29,9 +29,9 @@ class nv_form_tab_control: nv_form_control {
 	void ready_index(bool shift_is_down) {
 		if (position < 0 || position >= tab_pages.length()) return;
 		if (shift_is_down && tab_pages[position].controls_count > 0)
-			tab_pages[position].set_focus(tab_pages[position].controls.length(), true);
+			tab_pages[position].control_index = tab_pages[position].controls.length();
 		else
-			tab_pages[position].set_focus(-1, true);
+			tab_pages[position].control_index = -1;
 	}
 	bool get_is_waiting_form() const property {
 		if (position < 0 || position >= tab_pages.length()) return false;
@@ -111,7 +111,7 @@ class nv_form_tab_control: nv_form_control {
 				if (key_repeating(KEY_TAB)) {
 					bool next = !(key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT));
 					bool was_inside_page = tab_pages[position].control_index > -1;
-					tab_pages[position].set_focus(-1, true);
+					tab_pages[position].control_index = -1;
 					int target = position + (next ? 1 : -1);
 					if (target >= int(tab_pages.length()))
 						target = 0;
@@ -136,11 +136,11 @@ class nv_form_tab_control: nv_form_control {
 			}
 			if (tab_pages[position].control_index > -1) {
 				if ((tab_pages[position].is_last_control || tab_pages[position].controls_count == 0) && key_up(KEY_LSHIFT) && key_up(KEY_RSHIFT) && key_repeating(KEY_TAB)) {
-					tab_pages[position].set_focus(-1, true);
+					tab_pages[position].control_index = -1;
 					parent.navigate_form();
 					return true;
 				} else if (tab_pages[position].is_first_control && (key_down(KEY_LSHIFT) || key_down(KEY_RSHIFT)) && key_repeating(KEY_TAB)) {
-					tab_pages[position].set_focus(-1, true);
+					tab_pages[position].control_index = -1;
 					parent.speak_current_control();
 					return true;
 				}

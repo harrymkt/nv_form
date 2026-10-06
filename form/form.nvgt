@@ -410,19 +410,18 @@ class nv_form {
 		return focus_control(ctrl, quiet, interrupt_previous_speech);
 	}
 	bool focus_control(nv_form_control@ctrl, bool quiet = false, bool interrupt_previous_speech = true) {
-		if (@ctrl == null) return false;
-		int index = controls.find_by_ref(ctrl);
-		if (index == -1) return false;
+		int index = -1;
+		if (@ctrl != null) index = controls.find_by_ref(ctrl);
 		return set_focus(index, quiet, interrupt_previous_speech);
 	}
-	private bool set_focus(int control_index, bool quiet = false, bool interrupt_previous_speech = true) {
-		if (control_index<0 || control_index >= controls.length()) return false;
+	bool set_focus(int control_index, bool quiet = false, bool interrupt_previous_speech = true) {
 		nv_form_control@ current = current_control;
 		if (@current != null) {
 			current.event.fire(nv_form_event(current, NV_FORM_EVENT_FOCUS_LOST));
 			current.on_focus_lost();
 		}
 		this.control_index = control_index;
+		if (this.control_index < 0 || this.control_index >= controls.length()) return false;
 		current_control.event.fire(nv_form_event(this.current_control, NV_FORM_EVENT_FOCUS_GAINED));
 		current_control.on_focus_gained_immediate();
 		bool result;
