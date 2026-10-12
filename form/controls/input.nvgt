@@ -1,22 +1,20 @@
 class nv_form_input: nv_form_control {
 	string text;
-	private string __default_text__;
+	protected string __default_text__;
 	string password_mask;
 	string highlight_select_speech_text = "selected", highlight_unselect_speech_text = "unselected", delete_speech_text = "";
 	int cursor = 0;
 	int sel_start = -1;
 	int sel_end = -1;
 	int max_length = 0;
-	bool read_only = false;
-	bool multiline = false;
-	bool overwrite = false;
+	bool read_only, multiline, overwrite;
 	bool enable_delete = true;
 	string delete_disabled_message = "This input has disabled deletion";
 	int echo_flag = TEXTFLAG_ENTRY_CHARACTERS;
 	uint8 clipboard_flags = NV_CLIPBOARD_FLAG_COPY | NV_CLIPBOARD_FLAG_CUT | NV_CLIPBOARD_FLAG_PASTE;
 	string[] disallowed_chars;
-	bool use_only_disallowed_chars = false;
-	string char_disallowed_description = "";
+	bool use_only_disallowed_chars;
+	string char_disallowed_description;
 	nv_form_input(nv_form@parent, const string &in caption, const string &in id = "") {
 		super(caption, id, NV_FORM_CT_INPUT, @parent);
 		echo_flag = this.parent.keyboard_echo;
@@ -323,15 +321,15 @@ class nv_form_input: nv_form_control {
 		else if (character == "\t") return "tab";
 		string oc = nv_get_readable_key(character, true);
 		if (oc != "") return oc;
-		if ((echo_flag == TEXTFLAG_ENTRY_NONE) && (ignore_echo_flag == false))
+		if (echo_flag == TEXTFLAG_ENTRY_NONE && !ignore_echo_flag)
 			return "";
 		if (character.is_alphanumeric()) {
 			if (character.is_upper())
-				return "Capital " + character + " ";
+				return "Capital " + character;
 			else
-				return character + " ";
+				return character;
 		}
-		return character + " ";
+		return character;
 	}
 	string find_appropriate_character(string original_character) {
 		original_character.resize(utf8size(original_character));
@@ -625,7 +623,7 @@ class nv_form_input: nv_form_control {
 		speak("Copied to clipboard", true);
 	}
 	void cut_highlighted() {
-		if (read_only == true) {
+		if (read_only) {
 			speak("Cannot cut from a read only edit box.", true);
 			return;
 		}
@@ -718,7 +716,7 @@ class nv_form_input: nv_form_control {
 		delete_highlighted(from_start, true);
 	}
 	void delete_highlighted(int from_start, bool speak_deleted) {
-		if ((text == "") || (read_only == true))
+		if (text == "" || read_only)
 			return;
 		validate_positions();
 		if (has_selection) {

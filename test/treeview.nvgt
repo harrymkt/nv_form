@@ -17,11 +17,23 @@ void main() {
 	list = {"Home", "Desktop", "Network"};
 	for (uint i = 0; i < list.length(); i++) a.add(list[i], list[i]);
 	f.add_control(a);
+	nv_form_treeview@ m = f.add_treeview("Files", "file", multiselect = true);
+	m.add("Program.exe", "program");
+	m.add("Tools", "tools").add("Application", "application.exe");
 	nv_form_button@ can = f.add_button("Close", "close", false, true);
 	while (f.monitor()) {
 		wait(5);
 	}
-	if (@a.focused_node == null) alert("Information", "You did not select any directory");
-	//else alert("The selected directory is", (@a.focused_node.parent != null ? a.focused_node.parent.id + "/" : "") + a.focused_node_id);
-	else alert("The selected directory is", a.focused_node.full_id("/"));
+	string[] fr = selected_nodes(m.nodes);
+	if (fr.length() > 0) alert("Selected files", join(fr, ", "));
+	if (@a.focused_node != null) alert("The selected directory is", a.focused_node.full_id("/"));
+}
+string[] selected_nodes(nv_form_tree_node@[] nodes) {
+	if (nodes.length() < 1) return {};
+	string[] fr;
+	foreach (nv_form_tree_node@ node: nodes) {
+		if (node.selected) fr.insert_last(node.full_id("/"));
+		if (node.has_nodes) fr.extend(selected_nodes(node.nodes));
+	}
+	return fr;
 }

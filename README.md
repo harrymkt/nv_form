@@ -36,5 +36,5 @@ NV Form module provides the following features:
 - Custom Form: Add to or otherwise modify the NV Form module by making a child class of `nv_form` to integrate your changes, custom logic, custom verifications and how controls are added, without ever directly touching the main NV Form module which would otherwise be painful especially if you have to copy and paste  and update all the time when the main NV Form module is updated.
 - Events: Make your projects more integrated by using events dispatched by the form's event dispatcher without having to modify controls, i.e. adding keyboard / navigation sounds.
 - Extensive Shortcuts: Utilize advanced shortcut combinations, key modifiers, multitap keys, all from just one shortcut manager.
-- Organized Forms: Make your project more clean and categorized by utilizing tab controls, known as child forms.
+- Organized Forms: Make your project more clean and categorized by utilizing tab controls.
 - Touch and Keyboard Support: Cross-platform support for touch and keyboard, allowing your projects to use UI controls even on mobile devices. Touch support is improving but is still young.

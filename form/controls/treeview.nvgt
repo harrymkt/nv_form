@@ -2,18 +2,19 @@ class nv_form_tree_node {
 	string text;
 	string id;
 	int level;
-	bool expanded;
+	bool expanded, selected;
 	nv_form_tree_node@ parent;
 	nv_form_tree_node@[] nodes;
-	nv_form_tree_node(const string &in text, const string &in id = "", int level = 0, nv_form_tree_node@ parent = null) {
+	nv_form_tree_node(const string &in text, const string &in id = "", int level = 0, nv_form_tree_node@ parent = null, bool selected = false) {
 		this.text = text;
 		this.id = id;
 		this.level = level;
 		expanded = false;
+		this.selected = selected;
 		@this.parent = parent;
 	}
-	nv_form_tree_node@ add(const string &in text, const string &in id = "") {
-		nv_form_tree_node child(text, id, level + 1, @this);
+	nv_form_tree_node@ add(const string &in text, const string &in id = "", bool selected = false) {
+		nv_form_tree_node child(text, id, level + 1, @this, selected);
 		nodes.insert_last(child);
 		return child;
 	}
@@ -48,14 +49,16 @@ class nv_form_treeview : nv_form_control {
 	nv_form_tree_node@[] nodes;
 	nv_form_tree_node@[] visible_nodes;
 	int pos = -1;
+	bool multiselect;
 	bool speak_level = true;
 	bool multinav = true;
 	timer multinavtime;
 	string multichar;
 	int page_size = 10;
-	nv_form_treeview(nv_form@ parent, const string &in caption, const string &in id = "", bool speak_level = true) {
+	nv_form_treeview(nv_form@ parent, const string &in caption, const string &in id = "", bool speak_level = true, bool multiselect = false) {
 		super(caption, id, NV_FORM_CT_TREEVIEW, @parent);
 		this.speak_level = speak_level;
+		this.multiselect = multiselect;
 		@touch = touch_gesture_manager();
 		dictionary touches = {
 			{"double_tap1f", KEY_SPACE},
@@ -82,8 +85,8 @@ class nv_form_treeview : nv_form_control {
 		}
 		return -1;
 	}
-	nv_form_tree_node@ add(const string &in text, const string &in id = "") {
-		nv_form_tree_node node(text, id, 0, null);
+	nv_form_tree_node@ add(const string &in text, const string &in id = "", bool selected = false) {
+		nv_form_tree_node node(text, id, 0, null, selected);
 		nodes.insert_last(node);
 		rebuild();
 		return node;
@@ -274,6 +277,13 @@ class nv_form_treeview : nv_form_control {
 			speak_current_node();
 			return true;
 		}
+		if (multiselect) {
+			if (enabled && key_pressed(KEY_SPACE) && @focused_node != null) {
+				focused_node.selected = !focused_node.selected;
+				speak((focused_node.selected ? "Checked" : "Not checked"));
+				return true;
+			}
+		}
 		if (handle_nv_utils(this)) return true;
 		return false;
 	}
@@ -289,6 +299,7 @@ class nv_form_treeview : nv_form_control {
 		}
 		string[] f = {node.text, state};
 		if (speak_level) f.insert_last("level " + node.level);
+		if (multiselect && node.selected) f.insert_last("checked");
 		return join(f, "  ");
 	}
 	bool search(const string &in text, int dir = 1, bool silent = false) {

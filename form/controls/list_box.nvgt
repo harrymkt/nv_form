@@ -8,9 +8,9 @@ class nv_form_list_box: nv_form_control {
 	timer multinavtime;
 	string multichar;
 	int page_size = 10;
-	nv_form_list_box(nv_form@parent, const string &in caption, const string &in id = "", bool allow_multiselect = false, nv_form_list_item@[] items = {}, int max_items = -1, bool speak_position = false) {
+	nv_form_list_box(nv_form@parent, const string &in caption, const string &in id = "", bool multiselect = false, nv_form_list_item@[] items = {}, int max_items = -1, bool speak_position = false) {
 		super(caption, id, NV_FORM_CT_LIST, @parent);
-		multiselect = allow_multiselect;
+		this.multiselect = multiselect;
 		this.speak_position = speak_position;
 		this.max_items = max_items;
 		if (items.length() > 0) this.items.extend(items);

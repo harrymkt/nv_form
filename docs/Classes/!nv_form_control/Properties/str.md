@@ -4,7 +4,7 @@ A string representation of the control.
 `string str;`
 
 ## Remarks:
-This property contains entire information of the control. For example, "Play music  check box  not checked".
+This property contains the entire information of the control. For example, "Play music  check box  not checked".
 
 To modify this function, implement the following syntax:
 ```NVGT

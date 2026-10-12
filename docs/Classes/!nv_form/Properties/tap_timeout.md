@@ -11,6 +11,7 @@ int tap_timeout {
 		return __tap_timeout;
 	}
 	set {
+		__tap_timeout = value;
 	}
 }
 ```

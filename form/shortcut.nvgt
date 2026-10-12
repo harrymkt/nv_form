@@ -1,4 +1,4 @@
-// Shortcut related functions and classes, including manager.
+// Shortcut related implementations, including manager.
 string nv_get_readable_key(const string &in symbol, bool strict = false) {
 	string[][] map = {
 		{";", "Semicolon"},
@@ -69,10 +69,10 @@ class nv_shortcut {
 	int key;
 	bool ctrl, shift, alt;
 	uint tap;
-	uint current_taps = 0;
+	uint current_taps;
 	timer tap_timer;
 	int tap_timeout = 300;
-	string custom_name = "";
+	string custom_name;
 	nv_shortcut(int k, bool ctrl = false, bool shift = false, bool alt = false, uint tap = 1) {
 		this.key = k;
 		this.ctrl = ctrl;
@@ -106,13 +106,13 @@ class nv_shortcut {
 class nv_shortcut_manager : engine_key_event_listener {
 	nv_shortcut@[] shortcuts;
 	int last_key = -1;
-	uint tap_count = 0;
+	uint tap_count;
 	timer tap_timer;
 	int tap_timeout = 200;
 	// Captured modifier state at time of press
 	bool last_ctrl, last_shift, last_alt;
-	bool force_resolved = false;
-	private bool attached = false;
+	bool force_resolved;
+	private bool attached;
 	nv_shortcut_manager() {
 		::on_key_press += this;
 		attached = true;

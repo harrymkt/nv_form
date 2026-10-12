@@ -12,4 +12,4 @@ Set a particular control to have the keyboard focus, and notify the user.
 `bool`: `true` if the control was successfully focused, `false` otherwise.
 
 ## Remarks:
-Alternatively, you can use `control.focus` method, in which case the `ctrl` argument will not be needed.
+Alternatively, you can use `nv_form_control::focus` method, in which case the `ctrl` argument will not be needed.

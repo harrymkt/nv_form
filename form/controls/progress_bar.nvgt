@@ -1,6 +1,6 @@
 class nv_form_progress_bar: nv_form_control {
 	double min_value, max_value, cur_value;
-	double update_interval = 0.05;
+	double update_interval = 5;
 	double last_spoken_value = -1;
 	bool speak_progress_updates = true, beep_progress_updates = true;
 	nv_form_progress_bar(nv_form@parent, const string &in caption, const string &in id = "", double min_value = 0.0, double max_value = 100.0, double initial_value = 0.0) {
