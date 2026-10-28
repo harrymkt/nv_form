@@ -7,7 +7,7 @@ abstract class nv_form_control {
 	string help;
 	protected nv_shortcut@ __shortcut;
 	nv_form@parent;
-	bool speak_shortcut = true, autoactivate;
+	bool speak_shortcut = true, autoactivate, speak_attributes_separately;
 	bool hidden, enabled = true;
 	uint util_flags = NV_UTIL_GO_INDEX | NV_UTIL_SEARCH;
 	nv_form_control_callback@ callback;
@@ -22,6 +22,7 @@ abstract class nv_form_control {
 		this.id = id;
 		@this.parent = parent;
 		if (@parent.default_event_handler != null) event.add(parent.default_event_handler);
+		speak_attributes_separately = parent.speak_control_attributes_separately;
 	}
 	~nv_form_control() {
 		rm_shortcut();
@@ -111,7 +112,7 @@ abstract class nv_form_control {
 		if (@parent != null) texts.insert_last(parent.get_fixed_type(this));
 		if (!enabled) texts.insert_last(" unavailable");
 		if (@shortcut != null && speak_shortcut) texts.insert_last(shortcut.name);
-		if (@parent != null && !parent.speak_control_attributes_separately) {
+		if (!speak_attributes_separately) {
 			string v = get_control_info();
 			if (v != "") texts.insert_last(v);
 		}

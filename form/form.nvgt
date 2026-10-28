@@ -445,8 +445,8 @@ class nv_form {
 		nv_form_control@ctrl = current_control;
 		if (@ctrl == null) return false;
 		string ct = ctrl.str;
-		if (ct != "" && !speak_control_attributes_separately) return speak(ct, interrupt);
-		else if (ct != "" && speak_control_attributes_separately) {
+		if (ct != "" && !ctrl.speak_attributes_separately) return speak(ct, interrupt);
+		else if (ct != "" && ctrl.speak_attributes_separately) {
 			speak(ct, interrupt);
 			speak(ctrl.get_control_info(), false);
 			return true;
