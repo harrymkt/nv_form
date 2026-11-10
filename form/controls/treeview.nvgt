@@ -302,11 +302,14 @@ class nv_form_treeview : nv_form_control {
 		if (multiselect && node.selected) f.insert_last("checked");
 		return join(f, "  ");
 	}
-	bool search(const string &in text, int dir = 1, bool silent = false) {
+	bool search(string text, int dir = 1, bool silent = false, bool all_cases = true) {
 		if (visible_nodes.length() < 1) return false;
+		if (all_cases) text.lower_this();
 		string[] nav_nodes(this.visible_nodes.length());
-		for (uint i = 0; i < this.visible_nodes.length(); i++)
+		for (uint i = 0; i < this.visible_nodes.length(); i++) {
 			nav_nodes[i] = visible_nodes[i].text;
+			if (all_cases) nav_nodes[i].lower_this();
+		}
 		bool already_on_result = false;
 		bool focused = pos > -1 && pos < int(visible_nodes.length());
 		if (focused) already_on_result = nav_nodes[pos].find(text) > -1;

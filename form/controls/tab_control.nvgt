@@ -223,11 +223,14 @@ class nv_form_tab_control: nv_form_control {
 		tab_pages.insert_last(tp);
 		if (position < 0) position = 0;
 	}
-	bool search(const string &in text, int dir = 1, bool silent = false) {
+	bool search(string text, int dir = 1, bool silent = false, bool all_cases = true) {
 		if (tab_pages.length() < 1) return false;
+		if (all_cases) text.lower_this();
 		string[] nav_items(this.tab_pages.length());
-		for (uint i = 0; i < this.tab_pages.length(); i++)
+		for (uint i = 0; i < this.tab_pages.length(); i++) {
 			nav_items[i] = tab_pages[i].name;
+			if (all_cases) nav_items[i].lower_this();
+		}
 		bool already_on_result = false;
 		bool focused = position > -1 && position < int(tab_pages.length());
 		if (focused) already_on_result = nav_items[position].find(text) > -1;

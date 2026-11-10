@@ -1,0 +1,75 @@
+class nv_search_for : nv_utility_form {
+	nv_form@ parent;
+	nv_form_control@ ctrl;
+	nv_form f;
+	nv_form_input@ f_text;
+	nv_form_checkbox@ f_case;
+	nv_form_button@ f_next, f_prev, f_cancel;
+	nv_search_for(nv_form@ parent, nv_form_control@ control) {
+		@this.parent = @parent;
+		@ctrl = @control;
+		nv_form_input@ ctrl_input = cast<nv_form_input@>(ctrl);
+		nv_form_list_box@ ctrl_list = cast<nv_form_list_box@>(ctrl);
+		nv_form_treeview@ ctrl_tree = cast<nv_form_treeview@>(ctrl);
+		nv_form_tab_control@ ctrl_tab = cast<nv_form_tab_control@>(ctrl);
+		if (@ctrl_list == null && @ctrl_input == null && @ctrl_tree == null && @ctrl_tab == null) return;
+		else if (
+			(@ctrl_input != null && ctrl_input.text == "") ||
+			(@ctrl_list != null && ctrl_list.items.length() < 1) ||
+			(@ctrl_tree != null && ctrl_tree.visible_nodes.length() < 1) ||
+			(@ctrl_tab != null && ctrl_tab.tab_pages.length() < 1)
+		) return;
+		string current = "";
+		if (parent.nv_utility_form_data.exists("last_search")) parent.nv_utility_form_data.get("last_search", current);
+		bool match_all_cases = true;
+		if (parent.nv_utility_form_data.exists("match_all_cases")) parent.nv_utility_form_data.get("match_all_cases", match_all_cases);
+		string wmsg = "Search for Text";
+		string lnmsg = "Search term";
+		if (@ctrl_list != null || @ctrl_tree != null || @ctrl_tab != null)
+			wmsg = "Search for Item";
+		f.create_window(wmsg, false, true);
+		@f_text = f.add_input(lnmsg, "ln", current, "", 256);
+		f_text.select(0);
+		f_text.util_flags &= ~(NV_UTIL_GO_INDEX | NV_UTIL_SEARCH);
+		@f_case = f.add_checkbox("Match all cases", "case", match_all_cases);
+		@f_next = f.add_button("Next search", "next", true);
+		@f_next.shortcut = nv_shortcut(KEY_N, alt = true);
+		@f_prev = f.add_button("Previous search", "prev");
+		@f_prev.shortcut = nv_shortcut(KEY_P, alt = true);
+		@f_cancel = f.add_button("cancel", "cancel", false, true);
+		@f.background_callback = parent.background_callback;
+		f.focus_control(f_text, false, false);
+		@parent.nv_utility_form = this;
+	}
+	void monitor() {
+		if (!f.monitor()) {
+			parent.focus_control(ctrl);
+			@parent.nv_utility_form = null;
+			return;
+		}
+		bool nv_search_forward = f.is_pressed(f_next);
+		if (f.is_pressed(f_cancel)) {
+			parent.focus_control(ctrl);
+			@parent.nv_utility_form = null;
+			return;
+		} else if (nv_search_forward or f.is_pressed(f_prev)) {
+			string text = f_text.text;
+			if (text == "") {
+				speak("Enter some text to search for");
+				f.focus_control(f_text, false, false);
+				return;
+			}
+			if (!parent.search(ctrl, text, nv_search_forward ? 1 : -1, false, f_case.state)) {
+				speak("Nothing found");
+				f.focus_control(f_text, false, false);
+			} else {
+				@parent.nv_utility_form = null;
+				parent.nv_utility_form_data.set("last_search", text);
+			}
+			return;
+		}
+	}
+}
+nv_utility_form@ create_nv_search_for(nv_form@ parent, nv_form_control@ ctrl) {
+	return nv_search_for(parent, ctrl);
+}

@@ -233,11 +233,14 @@ class nv_form_list_box: nv_form_control {
 		}
 		return cs;
 	}
-	bool search(const string &in text, int dir = 1, bool silent = false) {
+	bool search(string text, int dir = 1, bool silent = false, bool all_cases = true) {
 		if (items.length() < 1) return false;
+		if (all_cases) text.lower_this();
 		string[] nav_items(this.items.length());
-		for (uint i = 0; i < this.items.length(); i++)
+		for (uint i = 0; i < this.items.length(); i++) {
 			nav_items[i] = items[i].text;
+			if (all_cases) nav_items[i].lower_this();
+		}
 		bool already_on_result = false;
 		bool focused = list_position > -1 && list_position < int(items.length());
 		if (focused) already_on_result = nav_items[list_position].find(text) > -1;

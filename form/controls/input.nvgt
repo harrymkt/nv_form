@@ -800,17 +800,19 @@ class nv_form_input: nv_form_control {
 		text = v;
 		validate_positions();
 	}
-	bool search(const string &in text, int dir = 1, bool silent = false) {
+	bool search(string text, int dir = 1, bool silent = false, bool all_cases = true) {
 		validate_positions();
 		string wrapped = "";
 		int idx = -1;
+		string temp = this.text;
+		if (all_cases) temp.lower_this();
 		if (dir > 0)
-			idx = this.text.find(text, cursor + 1);
+			idx = temp.find(text, cursor + 1);
 		else if (cursor > 0)
-			idx = this.text.rfind(text, cursor - 1);
+			idx = temp.rfind(text, cursor - 1);
 		if (idx < 0) {
 			wrapped = dir > 0 ? "wrapped to top" : "wrapped to bottom";
-			idx = dir > 0 ? this.text.find(text, 0) : this.text.rfind(text, -1);
+			idx = dir > 0 ? temp.find(text, 0) : temp.rfind(text, -1);
 		}
 		if (idx < 0) {
 			if (!silent) speak("nothing found");

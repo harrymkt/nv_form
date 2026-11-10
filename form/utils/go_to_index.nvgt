@@ -1,0 +1,127 @@
+class nv_go_to_index : nv_utility_form {
+	nv_form@ parent;
+	nv_form_control@ ctrl;
+	nv_form f;
+	nv_form_input@ f_index, f_col;
+	nv_form_button@ f_ok, f_cancel;
+	nv_go_to_index(nv_form@ parent, nv_form_control@ control) {
+		@this.parent = @parent;
+		@ctrl = @control;
+		nv_form_input@ ctrl_input = cast<nv_form_input@>(ctrl);
+		nv_form_list_box@ ctrl_list = cast<nv_form_list_box@>(ctrl);
+		nv_form_treeview@ ctrl_tree = cast<nv_form_treeview@>(ctrl);
+		nv_form_tab_control@ ctrl_tab = cast<nv_form_tab_control@>(ctrl);
+		if (@ctrl_list == null && @ctrl_input == null && @ctrl_tree == null && @ctrl_tab == null) return;
+		else if (
+			(@ctrl_input != null && ctrl_input.text == "") ||
+			(@ctrl_list != null && ctrl_list.items.length() < 1) ||
+			(@ctrl_tree != null && ctrl_tree.visible_nodes.length() < 1) ||
+			(@ctrl_tab != null && ctrl_tab.tab_pages.length() < 1)
+		) return;
+		int current = 1;
+		string wmsg = "Go to line";
+		string lnmsg = "Line number";
+		if (@ctrl_input != null) current = ctrl_input.get_line_number();
+		else if (@ctrl_list != null || @ctrl_tree != null || @ctrl_tab != null) {
+			if (@ctrl_list != null) current = ctrl_list.list_position;
+			else if (@ctrl_tree != null) current = ctrl_tree.pos;
+			else if (@ctrl_tab != null) current = ctrl_tab.position;
+			current++;
+			wmsg = "Go to index";
+			lnmsg = "Item number";
+		}
+		f.create_window(wmsg, false, true);
+		@f_index = nv_form_input(f, lnmsg, "ln");
+		f_index.default_text = current;
+		f_index.select(0);
+		f_index.util_flags &= ~(NV_UTIL_GO_INDEX | NV_UTIL_SEARCH);
+		f_index.set_disallowed_chars("0123456789", true);
+		f.add_control(f_index);
+		nv_form_control@ index_to_focus = f_index;
+		if (@ctrl_input != null) {
+			@f_col = nv_form_input(f, "Line column", "lc");
+			f_col.default_text = ctrl_input.get_line_column();
+			f_col.select(0);
+			f_col.util_flags &= ~(NV_UTIL_GO_INDEX | NV_UTIL_SEARCH);
+			f_col.set_disallowed_chars("0123456789", true);
+			f.add_control(f_col);
+			if (!ctrl_input.multiline) {
+				@index_to_focus = f_col;
+				f_index.hide();
+			}
+		}
+		@f_ok = f.add_button("Go", "ok", true);
+		@f_cancel = f.add_button("Cancel", "cancel", false, true);
+		@f.background_callback = parent.background_callback;
+		f.focus_control(index_to_focus, false, false);
+		@parent.nv_utility_form = this;
+	}
+	void monitor() {
+		if (!f.monitor()) {
+			parent.focus_control(ctrl);
+			@parent.nv_utility_form = null;
+			return;
+		}
+		nv_form_input@ ctrl_input = cast<nv_form_input@>(ctrl);
+		nv_form_list_box@ ctrl_list = cast<nv_form_list_box@>(ctrl);
+		nv_form_treeview@ ctrl_tree = cast<nv_form_treeview@>(ctrl);
+		nv_form_tab_control@ ctrl_tab = cast<nv_form_tab_control@>(ctrl);
+		if (f.is_pressed(f_cancel)) {
+			parent.focus_control(ctrl);
+			@parent.nv_utility_form = null;
+			return;
+		} else if (f.is_pressed(f_ok)) {
+			string idx = f_index.text;
+			if (!idx.is_digits() or idx.substr(0, 1) == "0") {
+				speak("enter a positive number");
+				f.focus_control(f_index, false, false);
+				return;
+			}
+			if (@ctrl_list != null) {
+				if (!ctrl_list.set_pos(parse_int(idx) - 1, false, true)) {
+					speak("Invalid item number");
+					f.focus_control(f_index, false, false);
+					return;
+				}
+				@parent.nv_utility_form = null;
+				parent.focus_control(ctrl);
+				return;
+			} else if (@ctrl_tree != null) {
+				if (!ctrl_tree.set_pos(parse_int(idx) - 1, false, true)) {
+					speak("Invalid item number");
+					f.focus_control(f_index, false, false);
+					return;
+				}
+				@parent.nv_utility_form = null;
+				parent.focus_control(ctrl);
+				return;
+			} else if (@ctrl_tab != null) {
+				if (!ctrl_tab.set_pos(parse_int(idx) - 1, false, true)) {
+					speak("Invalid item number");
+					f.focus_control(f_index, false, false);
+					return;
+				}
+				@parent.nv_utility_form = null;
+				parent.focus_control(ctrl);
+				return;
+			}
+			string col = f_col.text;
+			if (!col.is_digits()) {
+				speak("enter a positive number");
+				f.focus_control(f_col, false, false);
+				return;
+			}
+			if (!ctrl_input.set_line(parse_int(idx), parse_int(col))) {
+				speak("invalid line number!");
+				f.focus_control(f_index, false, false);
+			} else {
+				@parent.nv_utility_form = null;
+				parent.focus_control(ctrl);
+			}
+		}
+		return;
+	}
+}
+nv_utility_form@ create_nv_go_to_index(nv_form@ parent, nv_form_control@ ctrl) {
+	return nv_go_to_index(parent, ctrl);
+}
